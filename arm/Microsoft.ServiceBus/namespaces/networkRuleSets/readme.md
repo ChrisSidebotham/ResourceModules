@@ -32,7 +32,6 @@ This module deploys ServiceBus Namespaces NetworkRuleSets.
 | :-- | :-- | :-- | :-- |
 | `enableDefaultTelemetry` | bool | `True` | Enable telemetry via the Customer Usage Attribution ID (GUID). |
 
-
 ## Outputs
 
 | Output Name | Type | Description |
