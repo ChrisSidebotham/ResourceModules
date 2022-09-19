@@ -1,0 +1,37 @@
+name: $(resourceGroupName)
+
+variables:
+- template: settings.yml
+- name: modulesPath
+  value: 'modules'
+- name: defaultResourceGroupName
+  value: 'validation-rg'
+
+pr: none
+trigger: none
+
+resources:
+  repositories:
+  - repository: ResourceModules
+    type: git
+    ref: 'refs/heads/hack/Orchestration/Pipeline'
+    name: 'ResourceModules'
+
+stages:
+
+# -------------------------- #
+# Deployment StorageAccounts #
+# -------------------------- #
+- stage: Deploy_StorageAccount
+  displayName: Deploy Storage Account
+  variables:
+    resourceType: 'Microsoft.Storage/storageAccounts'
+    templateFilePath: $(modulesPath)/$(resourceType)/deploy.bicep
+  jobs:
+  - template: /.azuredevops/pipelineTemplates/jobs.validateModuleDeployment.yml
+    parameters:
+      deploymentBlocks:
+      - path:  CoreInfra/Microsoft.Storage/storageAccounts/parameters/parameters.json
+        templateFilePath: $(templateFilePath)
+        displayName: Deploy Storage Account
+
