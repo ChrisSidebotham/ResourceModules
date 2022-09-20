@@ -54,6 +54,13 @@ variables:
   bicepRegistryRGName: 'artifacts-rg' # The resource group that hosts the private bicep registry (ACR)
   bicepRegistryRgLocation: 'West Europe' # The location of the resource group to publish to
 
+  ######################################
+  # Solutions: Deployment Settings
+  ######################################
+  solutionsLocation: 'uksouth'
+  solutionsResourceGroupName: 'validation-rg'
+  solutionsServiceConnection: 'CARML-CSU-Tenant-Connection'
+
   ###########################################################################################################################
   ################################################## Azure DevOps Only ######################################################
   ###########################################################################################################################
