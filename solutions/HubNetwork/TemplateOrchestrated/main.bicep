@@ -6,6 +6,9 @@ param resourceGroupName string
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
 param tags object = {}
 
+@description('Resource Group location')
+param location string = 'westeurope'
+
 @allowed([
   ''
   'CanNotDelete'
@@ -15,10 +18,13 @@ param tags object = {}
 param lock string = ''
 
 @description('Required. Name of the network security group for the Azure Bastion Host subnet.')
-param nsgBastionSubnetName string
+param nsgBastionSubnetName string = '123'
 
 @description('Required. Name of the virtual network.')
-param vnetName string
+param vnetName1 string = 'vnet-hub'
+
+@description('Required. Name of the virtual network.')
+param vnetName2 string = 'vnet-spoke'
 
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string = ''
@@ -34,7 +40,7 @@ param eventHubName string = ''
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
-  location: deployment().location
+  location: location
   tags: tags
 }
 
@@ -48,7 +54,7 @@ module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGro
         name: 'AllowhttpsInbound'
         properties: {
           description: 'Allow inbound TCP 443 connections from the Internet'
-          protocol: 'TCP'
+          protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: 'Internet'
@@ -62,7 +68,7 @@ module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGro
         name: 'AllowGatewayManagerInbound'
         properties: {
           description: 'Allow inbound TCP 443 connections from the Gateway Manager'
-          protocol: 'TCP'
+          protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: 'GatewayManager'
@@ -76,7 +82,7 @@ module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGro
         name: 'AllowAzureLoadBalancerInbound'
         properties: {
           description: 'Allow inbound TCP 443 connections from the Azure Load Balancer'
-          protocol: 'TCP'
+          protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: 'AzureLoadBalancer'
@@ -124,7 +130,7 @@ module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGro
         name: 'AllowAzureCloudOutbound'
         properties: {
           description: 'Allow outbound 443 connections to Azure cloud'
-          protocol: 'TCP'
+          protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: '*'
@@ -173,39 +179,36 @@ module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGro
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     diagnosticEventHubName: eventHubName
   }
-  dependsOn: [
-    resourceGroup
-  ]
 }
 
 module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Hub'
   scope: resourceGroup
   params: {
-    name: vnetName
+    name: vnetName1
     addressPrefixes: [
       '192.168.100.0/24'
     ]
     subnets: [
       {
-        addressPrefix: '192.168.100.128/26'
-        name: 'GatewaySubnet'
-      }
-      {
-        addressPrefix: '192.168.100.160/26'
-        name: 'AzureFirewallSubnet'
-      }
-      {
-        addressPrefix: '192.168.100.64/26'
-        name: 'AzureBastionSubnet'
-        networkSecurityGroupId: NSG_bastion_subnet.outputs.name
-        //  routeTableId: ''
-      }
-      {
         addressPrefix: '192.168.100.0/26'
         name: 'Subnet-Hub'
         //  networkSecurityGroupId: ''
         //  routeTableId: ''
+      }
+      {
+        addressPrefix: '192.168.100.64/26'
+        name: 'AzureBastionSubnet'
+        networkSecurityGroupId: NSG_bastion_subnet.outputs.resourceId
+        //  routeTableId: ''
+      }
+      {
+        addressPrefix: '192.168.100.128/26'
+        name: 'GatewaySubnet'
+      }
+      {
+        addressPrefix: '192.168.100.192/26'
+        name: 'AzureFirewallSubnet'
       }
     ]
     tags: tags
@@ -216,12 +219,11 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
     diagnosticEventHubName: eventHubName
   }
 }
-
 module VirtualNetworkSpoke '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Spoke'
   scope: resourceGroup
   params: {
-    name: vnetName
+    name: vnetName2
     addressPrefixes: [
       '192.168.101.0/24'
     ]
