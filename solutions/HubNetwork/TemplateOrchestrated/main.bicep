@@ -191,12 +191,10 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
     ]
     subnets: [
       {
-        addressPrefix: '192.168.100.128/26'
-        name: 'GatewaySubnet'
-      }
-      {
-        addressPrefix: '192.168.100.160/26'
-        name: 'AzureFirewallSubnet'
+        addressPrefix: '192.168.100.0/26'
+        name: 'Subnet-Hub'
+        //  networkSecurityGroupId: ''
+        //  routeTableId: ''
       }
       {
         addressPrefix: '192.168.100.64/26'
@@ -205,10 +203,12 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
         //  routeTableId: ''
       }
       {
-        addressPrefix: '192.168.100.0/26'
-        name: 'Subnet-Hub'
-        //  networkSecurityGroupId: ''
-        //  routeTableId: ''
+        addressPrefix: '192.168.100.128/26'
+        name: 'GatewaySubnet'
+      }
+      {
+        addressPrefix: '192.168.100.192/26'
+        name: 'AzureFirewallSubnet'
       }
     ]
     tags: tags
@@ -219,7 +219,6 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
     diagnosticEventHubName: eventHubName
   }
 }
-
 module VirtualNetworkSpoke '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Spoke'
   scope: resourceGroup
