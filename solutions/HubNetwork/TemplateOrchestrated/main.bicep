@@ -217,7 +217,7 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
   }
 }
 
-module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+module VirtualNetworkSpoke '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Spoke'
   scope: resourceGroup
   params: {
