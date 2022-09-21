@@ -4,3 +4,5 @@ variables:
   location: 'northeurope'
   vmImage: 'ubuntu-latest'
   poolName: ''
+  tokenPrefix: '<<'
+  tokenSuffix: '>>'
