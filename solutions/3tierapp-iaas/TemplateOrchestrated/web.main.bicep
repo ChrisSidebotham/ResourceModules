@@ -33,11 +33,20 @@ param subnetId string
 @description('Required. Applization security group resource ID.')
 param asgId string
 
-@description('VM name prefix.')
+@description('Required. VM name prefix.')
 param vmNamePrefix string
+
+@description('Required. VM name prefix.')
+param availabilitySetNamePrefix string
 
 @description('Optional. Quantity of session hosts to deploy')
 param vmCount int = 1
+
+@description('Optional. Existing VM count index')
+param vmCountIndex int = 0
+
+@description('Optional. OS source image')
+param marketPlaceGalleryImage string = ?????????
 
 @description('Optional. Distribute VMs into availability zones, if set to no availability sets are used. ')
 param useAvailabilityZones bool = true
@@ -90,9 +99,11 @@ var varBastionSubnetName = 'AzureBastionSubnet'
 var varDeploymentPrefix = !empty(deploymentPrefix) ? deploymentPrefix : '3tier'
 var varResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : 'rg-${varDeploymentPrefixLowerCase}-${varLocationLowercase}-${varDeploymentTierLowerCase}'
 var varKeyvaultName = !empty(keyvaultName) ? keyvaultName : 'kv-${varDeploymentPrefixLowerCase}-${varDeploymentTierLowerCase}-${varLocationLowercase}-${uniqueStringSixChar}' // max length limit 24 characters
+var varAllAvailabilityZones = pickZones('Microsoft.Compute', 'virtualMachines', location, 3)
+var varAvailabilitySetNamePrefix = !empty(availabilitySetNamePrefix) ? availabilitySetNamePrefix : 'avail-${varDeploymentPrefixLowerCase}-${varDeploymentTierLowerCase}-${varLocationLowercase}'
 
 // ========== //
-// Deployment //
+// Deployments//
 // ========== //
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -134,138 +145,64 @@ module keyVault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
   }
 }
 
-module avdSessionHosts '../../../carml/1.2.0/Microsoft.Compute/virtualMachines/deploy.bicep' = [for i in range(1, avdSessionHostsCount): {
-  scope: resourceGroup('${avdWorkloadSubsId}', '${avdComputeObjectsRgName}')
-  name: 'AVD-Session-Host-${padLeft((i + avdSessionHostCountIndex), 3, '0')}-${time}'
+resource getkeyVault 'Microsoft.KeyVault/vaults@2021-06-01-preview' existing = {
+  name: keyVault.outputs.name
+  scope: resourceGroup
+}
+
+module availabilitySet '../../../modules/Microsoft.Compute/availabilitySets/deploy.bicep' = [for i in range(1, availabilitySetCount): {
+  name: 'AVD-AvSet--${i}-${time}'
+  scope: resourceGroup
   params: {
-    name: '${avdSessionHostNamePrefix}-${padLeft((i + avdSessionHostCountIndex), 3, '0')}'
+    name: '${vmNamePrefix}-${padLeft(i, 3, '0')}'
     location: avdSessionHostLocation
-    timeZone: avdTimeZone
-    userAssignedIdentities: createAvdFslogixDeployment ? {
-      '${fslogixManagedIdentityResourceId}': {}
-    } : {}
-    availabilityZone: avdUseAvailabilityZones ? take(skip(varAllAvailabilityZones, i % length(varAllAvailabilityZones)), 1) : []
-    encryptionAtHost: encryptionAtHost
-    availabilitySetName: !avdUseAvailabilityZones ? '${avdAvailabilitySetNamePrefix}-${padLeft(((1 + (i + avdSessionHostCountIndex) / maxAvailabilitySetMembersCount)), 3, '0')}' : ''
+    availabilitySetFaultDomain: avdAsFaultDomainCount
+    availabilitySetUpdateDomain: avdAsUpdateDomainCount
+    tags: avdTags
+  }
+}]
+
+module virtualMachines '../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = [for i in range(1, vmCount): {
+  scope: resourceGroup
+  name: 'VM-${padLeft((i + vmCountIndex), 3, '0')}-${time}'
+  params: {
+    name: '${vmNamePrefix}-${padLeft((i + vmCountIndex), 3, '0')}'
+    location: location
+    availabilityZone: useAvailabilityZones ? take(skip(varAllAvailabilityZones, i % length(varAllAvailabilityZones)), 1) : []
+    availabilitySetName: !useAvailabilityZones ? '${avdAvailabilitySetNamePrefix}-${padLeft(((1 + (i + vmCountIndex) / maxAvailabilitySetMembersCount)), 3, '0')}' : ''
     osType: 'Windows'
     licenseType: 'Windows_Client'
-    vmSize: avdSessionHostsSize
-    imageReference: useSharedImage ? json('{\'id\': \'${avdImageTemplateDefinitionId}\'}') : marketPlaceGalleryWindows
+    vmSize: vmSize
+    imageReference: marketPlaceGalleryImage
     osDisk: {
       createOption: 'fromImage'
       deleteOption: 'Delete'
       diskSizeGB: 128
       managedDisk: {
-        storageAccountType: avdSessionHostDiskType
+        storageAccountType: vmOsDiskType
       }
     }
-    adminUsername: avdVmLocalUserName
-    adminPassword: avdWrklKeyVaultget.getSecret('avdVmLocalUserPassword')
+    adminUsername: vmLocalUserName
+    adminPassword: getkeyVault.getSecret('avdVmLocalUserPassword')
     nicConfigurations: [
       {
         nicSuffix: 'nic-001-'
         deleteOption: 'Delete'
-        asgId: !empty(avdApplicationSecurityGroupResourceId) ? avdApplicationSecurityGroupResourceId : null
+        asgId: asgId
         enableAcceleratedNetworking: false
         ipConfigurations: [
           {
             name: 'ipconfig01'
-            subnetId: avdSubnetId
+            subnetId: subnetId
           }
         ]
       }
     ]
-    // Join domain.
-    allowExtensionOperations: true
-    extensionDomainJoinPassword: avdWrklKeyVaultget.getSecret('avdDomainJoinUserPassword')
-    extensionDomainJoinConfig: {
-      enabled: true
-      settings: {
-        name: avdIdentityDomainName
-        ouPath: !empty(sessionHostOuPath) ? sessionHostOuPath : null
-        user: avdDomainJoinUserName
-        restart: 'true'
-        options: '3'
-      }
-    }
-    // Enable and Configure Microsoft Malware.
-    extensionAntiMalwareConfig: {
-      enabled: true
-      settings: {
-        AntimalwareEnabled: true
-        RealtimeProtectionEnabled: 'true'
-        ScheduledScanSettings: {
-          isEnabled: 'true'
-          day: '7' // Day of the week for scheduled scan (1-Sunday, 2-Monday, ..., 7-Saturday)
-          time: '120' // When to perform the scheduled scan, measured in minutes from midnight (0-1440). For example: 0 = 12AM, 60 = 1AM, 120 = 2AM.
-          scanType: 'Quick' //Indicates whether scheduled scan setting type is set to Quick or Full (default is Quick)
-        }
-        Exclusions: createAvdFslogixDeployment ? {
-          Extensions: '*.vhd;*.vhdx'
-          Paths: '"%ProgramFiles%\\FSLogix\\Apps\\frxdrv.sys;%ProgramFiles%\\FSLogix\\Apps\\frxccd.sys;%ProgramFiles%\\FSLogix\\Apps\\frxdrvvt.sys;%TEMP%\\*.VHD;%TEMP%\\*.VHDX;%Windir%\\TEMP\\*.VHD;%Windir%\\TEMP\\*.VHDX;\\\\server\\share\\*\\*.VHD;\\\\server\\share\\*\\*.VHDX'
-          Processes: '%ProgramFiles%\\FSLogix\\Apps\\frxccd.exe;%ProgramFiles%\\FSLogix\\Apps\\frxccds.exe;%ProgramFiles%\\FSLogix\\Apps\\frxsvc.exe'
-        } : {}
-      }
-    }
-    tags: avdTags
+    tags: !empty(tags) ? tags : {}
   }
   dependsOn: []
 }]
 
-module virtualNetwork '../../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
-  scope: resourceGroup
-  name: 'Deploy-vNet-${time}'
-  params: {
-    name: varVnetName
-    addressPrefixes: [
-      vnetAddressPrefix
-    ]
-    subnets: [
-      {
-        addressPrefix: vnetBastionSubnetAddressPrefix
-        name: varBastionSubnetName
-        networkSecurityGroupId: nsgBastionSubnet.outputs.resourceId
-        //  routeTableId: ''
-      }
-      {
-        addressPrefix: vnetWebSubnetAddressPrefix
-        name: varWebTierSubnetName
-        networkSecurityGroupId: nsgWebSubnet.outputs.resourceId
-        routeTableId: udrWebSubnet.outputs.resourceId
-      }
-      {
-        addressPrefix: vnetAppSubnetAddressPrefix
-        name: varAppTierSubnetName
-        networkSecurityGroupId: nsgAppSubnet.outputs.resourceId
-        routeTableId: udrAppSubnet.outputs.resourceId
-      }
-      {
-        addressPrefix: vnetDbSubnetAddressPrefix
-        name: varDbTierSubnetName
-        networkSecurityGroupId: nsgDbSubnet.outputs.resourceId
-        routeTableId: udrDbSubnet.outputs.resourceId
-      }
-    ]
-    tags: !empty(tags) ? tags : {}
-    lock: !empty(lock) ? lock : ''
-    diagnosticWorkspaceId: !empty(workspaceId) ? workspaceId : ''
-    diagnosticStorageAccountId: !empty(diagnosticStorageAccountId) ? diagnosticStorageAccountId : ''
-    diagnosticEventHubAuthorizationRuleId: !empty(eventHubAuthorizationRuleId) ? eventHubAuthorizationRuleId : ''
-    diagnosticEventHubName: !empty(eventHubName) ? eventHubName : ''
-  }
-  dependsOn: [
-    asgWebSubnet
-    asgAppSubnet
-    asgDbSubnet
-  ]
-
-}
-
-output virtualNetworkId string = virtualNetwork.outputs.resourceId
-output bastionSubnetId string = virtualNetwork.outputs.subnetResourceIds[0]
-output webSubnetId string = virtualNetwork.outputs.subnetResourceIds[1]
-output appSubnetId string = virtualNetwork.outputs.subnetResourceIds[2]
-output dbSubnetId string = virtualNetwork.outputs.subnetResourceIds[2]
-output asgWebId string = asgWebSubnet.outputs.resourceId
-output asgAppId string = asgWebSubnet.outputs.resourceId
-output asgDbId string = asgWebSubnet.outputs.resourceId
+// ========== //
+// Outputs    //
+// ========== //

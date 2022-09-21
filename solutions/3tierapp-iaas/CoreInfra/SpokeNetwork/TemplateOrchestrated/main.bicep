@@ -120,7 +120,7 @@ var varAsgAppTierSubnetName = !empty(asgAppTierSubnetName) ? asgAppTierSubnetNam
 var varAsgDbTierSubnetName = !empty(asgDbTierSubnetName) ? asgDbTierSubnetName : 'asg-${varDeploymentPrefixLowerCase}-db-${varLocationLowercase}-001'
 
 // ========== //
-// Deployment //
+// Deployments//
 // ========== //
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -421,6 +421,9 @@ module virtualNetwork '../../../../../modules/Microsoft.Network/virtualNetworks/
 
 }
 
+// ========== //
+// Outputs    //
+// ========== //
 output virtualNetworkId string = virtualNetwork.outputs.resourceId
 output bastionSubnetId string = virtualNetwork.outputs.subnetResourceIds[0]
 output webSubnetId string = virtualNetwork.outputs.subnetResourceIds[1]
