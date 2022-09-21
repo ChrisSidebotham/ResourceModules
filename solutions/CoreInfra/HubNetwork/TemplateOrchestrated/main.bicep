@@ -44,7 +44,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
+module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
   name: 'NSG_Bastion_subnet'
   scope: resourceGroup
   params: {
@@ -181,7 +181,7 @@ module NSG_bastion_subnet '../../../modules/Microsoft.Network/networkSecurityGro
   }
 }
 
-module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Hub'
   scope: resourceGroup
   params: {
@@ -219,7 +219,7 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
     diagnosticEventHubName: eventHubName
   }
 }
-module VirtualNetworkSpoke '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+module VirtualNetworkSpoke '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Spoke'
   scope: resourceGroup
   params: {
