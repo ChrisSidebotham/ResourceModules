@@ -6,24 +6,47 @@ targetScope = 'subscription'
 @description('Optional. A parameter to control which deployments should be executed')
 @allowed([
     'All'
-    'Only infrastructure'
-    'Only storage & image'
-    'Only image'
+    'Web App'
+    'Web Static App'
 ])
-param deploymentsToPerform string = 'Only storage & image'
+param deploymentsToPerformFrontFacingLayer string
+
+@description('Optional. A parameter to control which deployments should be executed')
+@allowed([
+    'All'
+    'Cosmos DB'
+    'Serverless SQL'
+    'PostresSQL'
+])
+param deploymentsToPerformDatabaseLayer string
+
+@description('Optional. A parameter to control which deployments should be executed')
+@allowed([
+    'All'
+    'Container Groups'
+    'Container Registry'
+])
+param deploymentsToPerformApplicationLayer string
 
 @description('Optional. Specifies the location for resources.')
-param location string = 'WestEurope'
+param location string
+
 
 ///////////////////////////////
-//   Deployment Properties   //
+//   User-defined Deployment Properties   //
+///////////////////////////////
+
+///////////////////////////////
+//   Default Deployment Properties   //
 ///////////////////////////////
 // Resource Group
 var rgParam = {
-    name: 'agents-vmss-rg'
+    name: 'random-name'
+    location: ''
+    tags: []
 }
 // User Assigned Identity
-var msiParam = {
+var staticSiteParam = {
     name: 'aibMsi'
 }
 // User Assigned Identity Role Assignment on subscription scope
@@ -68,15 +91,15 @@ var acgParam = {
 //   Template Deployment   //
 /////////////////////////////
 module imageInfraDeployment '../templates/imageInfra.deploy.bicep' = {
-    name: '${uniqueString(deployment().name)
-    }-imageInfra-sbx'
-    params: {
-        location: location
-        rgParam: rgParam
-        acgParam: acgParam
-        msiParam: msiParam
-        msiRoleAssignmentParam: msiRoleAssignmentParam
-        saParam: saParam
-        deploymentsToPerform: deploymentsToPerform
-    }
+    name:
+} -imageInfra-sbx'
+     params: {
+location: location
+rgParam: rgParam
+acgParam: acgParam
+msiParam: msiParam
+msiRoleAssignmentParam: msiRoleAssignmentParam
+saParam: saParam
+deploymentsToPerform: deploymentsToPerform
+}
 }

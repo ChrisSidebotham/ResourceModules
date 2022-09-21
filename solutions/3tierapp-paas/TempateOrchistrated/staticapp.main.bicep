@@ -9,19 +9,22 @@ param tags object = {}
 @description('Resource Group location')
 param location string = 'westeurope'
 
-@description('Resource Group location')
+@description('Resource Group params')
+param rgParam object
+
+@description('Resource Group params')
 param staticSiteParam object
 
-@description('Container Group location')
-param containerGroupParam object
+// @description('Container Group location')
+// param containerGroupParam object
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: resourceGroupName
-  location: location
-  tags: tags
+  name: !empty(resourceGroupName) ? resourceGroupName : rgParam.name
+  location: !empty(resourceGroupName) ? resourceGroupName : rgParam.location
+  tags: !empty(resourceGroupName) ? resourceGroupName : rgParam.tags
 }
 
-module staticSite '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
+module staticSite '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = if (deploymentsToPerformFrontFacingLayer = 'Web Static App') {
   name: '${uniqueString(deployment().name)}-StaticSites'
   scope: resourceGroup
   params: {
@@ -59,30 +62,30 @@ module staticSite '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
   }
 }
 
-module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
-  name: '${uniqueString(deployment().name)}-ContainerGroups'
-  scope: resourceGroup
-  params: {
-    // Required parameters
-    containername: '<<namePrefix>>-az-aci-x-001'
-    image: 'mcr.microsoft.com/azuredocs/aci-helloworld'
-    name: '<<namePrefix>>-az-acg-x-001'
-    // Non-required parameters
-    lock: 'CanNotDelete'
-    ports: [
-      {
-        port: '80'
-        protocol: 'Tcp'
-      }
-      {
-        port: '443'
-        protocol: 'Tcp'
-      }
-    ]
-    systemAssignedIdentity: true
-    userAssignedIdentities: {
-      '/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
-    }
-  }
-}
+// module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
+//   name: '${uniqueString(deployment().name)}-ContainerGroups'
+//   scope: resourceGroup
+//   params: {
+//     // Required parameters
+//     containername: '<<namePrefix>>-az-aci-x-001'
+//     image: 'mcr.microsoft.com/azuredocs/aci-helloworld'
+//     name: '<<namePrefix>>-az-acg-x-001'
+//     // Non-required parameters
+//     lock: 'CanNotDelete'
+//     ports: [
+//       {
+//         port: '80'
+//         protocol: 'Tcp'
+//       }
+//       {
+//         port: '443'
+//         protocol: 'Tcp'
+//       }
+//     ]
+//     systemAssignedIdentity: true
+//     userAssignedIdentities: {
+//       '/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
+//     }
+//   }
+// }
 
