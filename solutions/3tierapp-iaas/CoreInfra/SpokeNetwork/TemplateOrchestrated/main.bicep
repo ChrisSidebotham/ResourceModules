@@ -129,7 +129,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: !empty(tags) ? tags : {}
 }
 
-module nsgBastionSubnet '../../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
+module nsgBastionSubnet '../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Bastion-NSG-${time}'
   params: {
@@ -267,7 +267,7 @@ module nsgBastionSubnet '../../../../../../modules/Microsoft.Network/networkSecu
   dependsOn: []
 }
 
-module nsgWebSubnet '../../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
+module nsgWebSubnet '../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Web-NSG-${time}'
   params: {
@@ -282,7 +282,7 @@ module nsgWebSubnet '../../../../../../modules/Microsoft.Network/networkSecurity
   }
 }
 
-module nsgAppSubnet '../../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
+module nsgAppSubnet '../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-App-NSG-${time}'
   params: {
@@ -297,7 +297,7 @@ module nsgAppSubnet '../../../../../../modules/Microsoft.Network/networkSecurity
   }
 }
 
-module nsgDbSubnet '../../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
+module nsgDbSubnet '../../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Db-NSG-${time}'
   params: {
@@ -312,7 +312,7 @@ module nsgDbSubnet '../../../../../../modules/Microsoft.Network/networkSecurityG
   }
 }
 
-module udrWebSubnet '../../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module udrWebSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Web-UDR-${time}'
   params: {
@@ -322,7 +322,7 @@ module udrWebSubnet '../../../../../../modules/Microsoft.Network/routeTables/dep
   }
 }
 
-module udrAppSubnet '../../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module udrAppSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-App-UDR-${time}'
   params: {
@@ -332,7 +332,7 @@ module udrAppSubnet '../../../../../../modules/Microsoft.Network/routeTables/dep
   }
 }
 
-module udrDbSubnet '../../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module udrDbSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-DB-UDR-${time}'
   params: {
@@ -342,7 +342,7 @@ module udrDbSubnet '../../../../../../modules/Microsoft.Network/routeTables/depl
   }
 }
 
-module asgWebSubnet '../../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgWebSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Web-ASG-${time}'
   params: {
@@ -352,7 +352,7 @@ module asgWebSubnet '../../../../../../modules/Microsoft.Network/routeTables/dep
   }
 }
 
-module asgAppSubnet '../../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgAppSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-App-ASG-${time}'
   params: {
@@ -362,7 +362,7 @@ module asgAppSubnet '../../../../../../modules/Microsoft.Network/routeTables/dep
   }
 }
 
-module asgDbSubnet '../../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgDbSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-DB-ASG-${time}'
   params: {
@@ -372,7 +372,7 @@ module asgDbSubnet '../../../../../../modules/Microsoft.Network/routeTables/depl
   }
 }
 
-module virtualNetwork '../../../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+module virtualNetwork '../../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-vNet-${time}'
   params: {
