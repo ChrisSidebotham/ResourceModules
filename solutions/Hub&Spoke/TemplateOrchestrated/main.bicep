@@ -219,3 +219,25 @@ module VirtualNetwork '../../../modules/Microsoft.Network/virtualNetworks/deploy
     diagnosticEventHubName: eventHubName
   }
 }
+module VirtualNetworkSpoke '../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+  name: 'VirtualNetwork_Spoke'
+  scope: resourceGroup
+  params: {
+    name: vnetName2
+    addressPrefixes: [
+      '192.168.101.0/24'
+    ]
+    subnets: [
+      {
+        addressPrefix: '192.168.101.0/26'
+        name: 'DefaultSubnet'
+      }
+    ]
+    tags: tags
+    lock: lock
+    diagnosticWorkspaceId: workspaceId
+    diagnosticStorageAccountId: diagnosticStorageAccountId
+    diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
+    diagnosticEventHubName: eventHubName
+  }
+}
