@@ -8,19 +8,27 @@ targetScope = 'subscription'
 param resourceGroupName string
 
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
-param tags object = {}
+param tags object
 
 @description('Resource Group location')
-param location string = 'westeurope'
+param location string = ''
 
+@description('Required. Name of the Static Site.')
+param staticSiteName string
+
+@description('Required. Name of the Static Site.')
+param allowConfigFileUpdates bool
+
+@description('Required. Name of the Static Site.')
+param enterpriseGradeCdnStatus string
 
 ///////////////////////////////
 //   Default Deployment Properties   //
 ///////////////////////////////
-@description('Resource Group params')
+@description('Static Siteparams')
 param rgParam object
 
-@description('Resource Group params')
+@description('Static Site params')
 param staticSiteParam object
 
 // @description('Container Group location')
@@ -37,33 +45,33 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
   scope: resourceGroup
   params: {
     // Required parameters
-    name: !empty(resourceGroupName) ? resourceGroupName : staticSiteParam.name
+    name: !empty(staticSiteName) ? staticSiteName : staticSiteParam.name
     // Non-required parameters
-    allowConfigFileUpdates: true
-    enterpriseGradeCdnStatus: 'Disabled'
-    lock: 'CanNotDelete'
+    allowConfigFileUpdates: !empty(allowConfigFileUpdates) ? allowConfigFileUpdates : staticSiteParam.allowConfigFileUpdates
+    enterpriseGradeCdnStatus: !empty(enterpriseGradeCdnStatus) ? enterpriseGradeCdnStatus : staticSiteParam.enterpriseGradeCdnStatus
+    lock: !empty(lock) ? lock : staticSiteParam.lock
     privateEndpoints: [
       {
         privateDnsZoneGroup: {
           privateDNSResourceIds: [
-            '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
+            !empty(privateDNSResourceIds) ? privateDNSResourceIds : staticSiteParam.privateDNSResourceIds
           ]
         }
-        service: 'staticSites'
-        subnetResourceId: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/virtualNetworks/adp-<<namePrefix>>-az-vnet-x-001/subnets/<<namePrefix>>-az-subnet-x-005-privateEndpoints'
+        service: !empty(service) ? service : staticSiteParam.service
+        subnetResourceId: !empty(subnetResourceId) ? subnetResourceId : staticSiteParam.subnetResourceId
       }
     ]
     roleAssignments: [
       {
         principalIds: [
-          '<<deploymentSpId>>'
+          !empty(principalIds) ? principalIds : staticSiteParam.principalIds
         ]
-        roleDefinitionIdOrName: 'Reader'
+        roleDefinitionIdOrName: !empty(roleDefinitionIdOrName) ? roleDefinitionIdOrName : staticSiteParam.roleDefinitionIdOrName
       }
     ]
-    sku: 'Standard'
-    stagingEnvironmentPolicy: 'Enabled'
-    systemAssignedIdentity: true
+    sku: !empty(sku) ? sku : staticSiteParam.sku
+    stagingEnvironmentPolicy: !empty(stagingEnvironmentPolicy) ? stagingEnvironmentPolicy : staticSiteParam.stagingEnvironmentPolicy
+    systemAssignedIdentity: !empty(systemAssignedIdentity) ? systemAssignedIdentity : staticSiteParam.systemAssignedIdentity
     userAssignedIdentities: {
       '/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
     }
@@ -96,4 +104,3 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
 //     }
 //   }
 // }
-

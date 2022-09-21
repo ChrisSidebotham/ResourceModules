@@ -36,6 +36,8 @@ param location string
 //   User-defined Deployment Properties   //
 ///////////////////////////////
 
+// This space is dedicated to any users that would like to change the deployment properties
+
 ///////////////////////////////
 //   Default Deployment Properties   //
 ///////////////////////////////
