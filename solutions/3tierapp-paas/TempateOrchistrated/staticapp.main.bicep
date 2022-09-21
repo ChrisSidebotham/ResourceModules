@@ -1,5 +1,9 @@
 targetScope = 'subscription'
 
+///////////////////////////////
+//   User-defined Deployment Properties   //
+///////////////////////////////
+
 @description('Required. Name of the Resource Group.')
 param resourceGroupName string
 
@@ -9,6 +13,10 @@ param tags object = {}
 @description('Resource Group location')
 param location string = 'westeurope'
 
+
+///////////////////////////////
+//   Default Deployment Properties   //
+///////////////////////////////
 @description('Resource Group params')
 param rgParam object
 
@@ -20,16 +28,16 @@ param staticSiteParam object
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : rgParam.name
-  location: !empty(resourceGroupName) ? resourceGroupName : rgParam.location
-  tags: !empty(resourceGroupName) ? resourceGroupName : rgParam.tags
+  location: !empty(location) ? location : rgParam.location
+  tags: !empty(tags) ? tags : rgParam.tags
 }
 
-module staticSite '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = if (deploymentsToPerformFrontFacingLayer = 'Web Static App') {
+module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-StaticSites'
   scope: resourceGroup
   params: {
     // Required parameters
-    name: '<<namePrefix>>-az-wss-x-001'
+    name: !empty(resourceGroupName) ? resourceGroupName : staticSiteParam.name
     // Non-required parameters
     allowConfigFileUpdates: true
     enterpriseGradeCdnStatus: 'Disabled'

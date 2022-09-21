@@ -42,7 +42,7 @@ param location string
 // Resource Group
 var rgParam = {
     name: 'random-name'
-    location: ''
+    location: 'northeurope'
     tags: []
 }
 // User Assigned Identity
