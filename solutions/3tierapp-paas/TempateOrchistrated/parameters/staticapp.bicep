@@ -31,7 +31,6 @@ param deploymentsToPerformApplicationLayer string
 @description('Optional. Specifies the location for resources.')
 param location string
 
-
 ///////////////////////////////
 //   User-defined Deployment Properties   //
 ///////////////////////////////
@@ -41,15 +40,26 @@ param location string
 ///////////////////////////////
 //   Default Deployment Properties   //
 ///////////////////////////////
-// Resource Group
+// Resource Group Params
 var rgParam = {
-    name: 'random-name'
+    name: 'rg-random-name'
     location: 'northeurope'
     tags: []
 }
-// User Assigned Identity
-var staticSiteParam = {
-    name: 'aibMsi'
+// Static Site Params
+var staticSiteParam = { //Inpput subscription IDs?
+    name: 'staticSite-random-name'
+    allowConfigFileUpdates: true
+    enterpriseGradeCdnStatus: 'Disabled'
+    lock: 'CanNotDelete'
+    privateDNSResourceIds: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
+    service: 'staticSites'
+    subnetResourceId: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/virtualNetworks/adp-<<namePrefix>>-az-vnet-x-001/subnets/<<namePrefix>>-az-subnet-x-005-privateEndpoints'
+    principalIds: '<<deploymentSpId>>'
+    roleDefinitionIdOrName: 'Reader'
+    sku: 'Standard'
+    stagingEnvironmentPolicy: 'Enabled'
+    systemAssignedIdentity: true
 }
 // User Assigned Identity Role Assignment on subscription scope
 var msiRoleAssignmentParam = {
@@ -94,8 +104,8 @@ var acgParam = {
 /////////////////////////////
 module imageInfraDeployment '../templates/imageInfra.deploy.bicep' = {
     name:
-} -imageInfra-sbx'
-     params: {
+}   -imageInfra-sbx'
+       params: {
 location: location
 rgParam: rgParam
 acgParam: acgParam

@@ -4,6 +4,8 @@ targetScope = 'subscription'
 //   User-defined Deployment Properties   //
 ///////////////////////////////
 
+//Parameters for Resource Group
+
 @description('Required. Name of the Resource Group.')
 param resourceGroupName string
 
@@ -13,14 +15,43 @@ param tags object
 @description('Resource Group location')
 param location string = ''
 
+//Parameters for Static site
+
 @description('Required. Name of the Static Site.')
 param staticSiteName string
 
-@description('Required. Name of the Static Site.')
+@description('Required. Allow Config File Updates of the Static Site.')
 param allowConfigFileUpdates bool
 
-@description('Required. Name of the Static Site.')
+@description('Required. Emterprise Grade Cdn Status of the Static Site.')
 param enterpriseGradeCdnStatus string
+
+@description('Required. Lock of the Static Site.')
+param lock string
+
+@description('Required. Private DNS Resource Ids of the Static Site.')
+param privateDNSResourceIds string
+
+@description('Required. Service of the Static Site.')
+param service string
+
+@description('Required. Subnet Resource Id of the Static Site.')
+param subnetResourceId string
+
+@description('Required. Principal Ids of the Static Site.')
+param principalIds string
+
+@description('Required. Role Definition or Name of the Static Site.')
+param roleDefinitionIdOrName string
+
+@description('Required. SKU of the Static Site.')
+param sku string
+
+@description('Required. Stagimg Environment Policy of the Static Site.')
+param stagingEnvironmentPolicy string
+
+@description('Required. System assigned identity of the Static Site.')
+param systemAssignedIdentity bool
 
 ///////////////////////////////
 //   Default Deployment Properties   //
@@ -73,10 +104,12 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
     stagingEnvironmentPolicy: !empty(stagingEnvironmentPolicy) ? stagingEnvironmentPolicy : staticSiteParam.stagingEnvironmentPolicy
     systemAssignedIdentity: !empty(systemAssignedIdentity) ? systemAssignedIdentity : staticSiteParam.systemAssignedIdentity
     userAssignedIdentities: {
-      '/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
+      //existing baked in Identity
     }
   }
 }
+
+//'/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
 
 // module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
 //   name: '${uniqueString(deployment().name)}-ContainerGroups'
