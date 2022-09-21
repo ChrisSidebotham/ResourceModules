@@ -9,6 +9,12 @@ param tags object = {}
 @description('Resource Group location')
 param location string = 'westeurope'
 
+@description('Resource Group location')
+param staticSiteParam object
+
+@description('Container Group location')
+param containerGroupParam object
+
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: location
