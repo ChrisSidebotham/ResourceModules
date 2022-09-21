@@ -104,7 +104,7 @@ jobs:
         with:
           variablesPath: ${{ env.variablesPath }}
       - name: 'Using test file [${{ matrix.moduleTestFilePaths }}]'
-        uses: ./.github/actions/templates/validateModuleDeployment
+        uses: ./.github/actions/templates/solutionDeployment
         with:
           templateFilePath: '${{ env.modulePath }}/deploy.bicep'
           parameterFilePath: '${{ env.modulePath }}/${{ matrix.moduleTestFilePaths }}'
