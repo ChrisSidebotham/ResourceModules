@@ -38,15 +38,26 @@ param eventHubAuthorizationRuleId string = ''
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
 param eventHubName string = ''
 
+/* To be removed once it is tested
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: location
   tags: tags
 }
+*/
+
+module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
+  name: uniqueString(deployment().name)
+  params: {
+    name: resourceGroupName
+    location: location
+    tags: tags
+  }
+}
 
 module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
   name: 'NSG_Bastion_subnet'
-  scope: resourceGroup
+  scope: resourceGroup(resourceGroupName)
   params: {
     name: nsgBastionSubnetName
     securityRules: [
@@ -183,7 +194,7 @@ module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurity
 
 module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Hub'
-  scope: resourceGroup
+  scope: resourceGroup(resourceGroupName)
   params: {
     name: vnetName1
     addressPrefixes: [
@@ -221,7 +232,7 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
 }
 module VirtualNetworkSpoke '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Spoke'
-  scope: resourceGroup
+  scope: resourceGroup(resourceGroupName)
   params: {
     name: vnetName2
     addressPrefixes: [
