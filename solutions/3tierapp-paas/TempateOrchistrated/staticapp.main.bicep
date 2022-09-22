@@ -21,7 +21,7 @@ param capabilitiesToAdd array = []
 param deploymentsToPerformFrontFacingLayer string
 
 @description('Optional. A parameter to control which Database deployments should be executed')
-@allowed([
+@allowed([ // Do storage account later
   'All'
   'Enable Cosmos DB'
   'Enable Serverless SQL'
@@ -30,7 +30,7 @@ param deploymentsToPerformFrontFacingLayer string
 param deploymentsToPerformDatabaseLayer string
 
 @description('Optional. A parameter to control which Application layer deployments should be executed')
-@allowed([
+@allowed([ //Do Function App later
   'All'
   'Enable Container Group'
   'Enable Container Registry'
@@ -44,18 +44,18 @@ param deploymentsToPerformApplicationLayer string
 //Parameters for Resource Group
 
 @description('Required. Name of the Resource Group.')
-param resourceGroupName string = 'az-rg-3tierapp-01'
+param resourceGroupName string = 'validation-rg'
 
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
 param tags object = {}
 
 @description('Resource Group location')
-param location string = 'northeurope'
+param location string = 'westeurope'
 
 //Parameters for Static site ALL DEFAULT IN JSON (optional) all REQUIRED IN HERE.
 
 @description('Required. Name of the Static Site.')
-param staticSiteName string = 'az-ss-app-001'
+param staticSiteName string = 'az-ss-app-002'
 
 @description('Required. Allow Config File Updates of the Static Site.')
 param allowConfigFileUpdates bool = true
@@ -63,31 +63,37 @@ param allowConfigFileUpdates bool = true
 @description('Required. Emterprise Grade Cdn Status of the Static Site.')
 param enterpriseGradeCdnStatus string = 'Disabled'
 
-@description('Required. Lock of the Static Site.')
+@description('Optional. Lock of the Static Site.')
 param lock string = 'CanNotDelete'
 
 @description('Required. Private DNS Resource Ids of the Static Site.')
-param privateDNSResourceIds string = '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
+param privateDNSResourceIds string = '/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
 
 @description('Required. Service of the Static Site.')
 param service string = 'staticSites'
 
 @description('Required. Subnet Resource Id of the Static Site.')
-param subnetResourceId string = '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/virtualNetworks/adp-<<namePrefix>>-az-vnet-x-001/subnets/<<namePrefix>>-az-subnet-x-005-privateEndpoints'
+param subnetResourceId string = '/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/validation-rg/providers/Microsoft.Network/virtualNetworks/adp-<<namePrefix>>-az-vnet-x-001/subnets/<<namePrefix>>-az-subnet-x-005-privateEndpoints'
 
-@description('Required. Principal Ids of the Static Site.')
-param principalIds string = '<<deploymentSpId>>'
+// @description('Required. Principal Ids of the Static Site.')
+// param principalIds string = '<<deploymentSpId>>'
 
-@description('Required. Role Definition or Name of the Static Site.')
-param roleDefinitionIdOrName string = 'Reader'
+// @description('Optional. Role Definition or Name of the Static Site.')
+// param roleDefinitionIdOrName string = 'Reader'
 
-@description('Required. SKU of the Static Site.')
+@description('Optional. Role Assignments of the Static Site.')
+param roleAssignments array = []
+
+@description('Optional. Private Endpoints of the Static Site.')
+param privateEndpoints array = []
+
+@description('Optional. SKU of the Static Site.')
 param sku string = 'Standard'
 
-@description('Required. Stagimg Environment Policy of the Static Site.')
+@description('Optional. Stagimg Environment Policy of the Static Site.')
 param stagingEnvironmentPolicy string = 'Enabled'
 
-@description('Required. System assigned identity of the Static Site.')
+@description('Optional. System assigned identity of the Static Site.')
 param systemAssignedIdentity bool = true
 
 // Resource Group Deployment
@@ -130,25 +136,8 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
     allowConfigFileUpdates: allowConfigFileUpdates
     enterpriseGradeCdnStatus: enterpriseGradeCdnStatus
     lock: lock
-    privateEndpoints: [
-      {
-        privateDnsZoneGroup: {
-          privateDNSResourceIds: [
-            privateDNSResourceIds
-          ]
-        }
-        service: service
-        subnetResourceId: subnetResourceId
-      }
-    ]
-    roleAssignments: [
-      {
-        principalIds: [
-          principalIds
-        ]
-        roleDefinitionIdOrName: roleDefinitionIdOrName
-      }
-    ]
+    privateEndpoints: privateEndpoints
+    roleAssignments: roleAssignments
     sku: sku
     stagingEnvironmentPolicy: stagingEnvironmentPolicy
     systemAssignedIdentity: systemAssignedIdentity
