@@ -52,7 +52,7 @@ param choiceOfDatabase string = 'All'
 param diagnosticStorageAccountId string = ''
 
 @description('Optional. Resource ID of the Log Analytics workspace to be used for diagnostic logs.')
-param workspaceId string = resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+param workspaceId string = ''
 
 @description('Optional. Authorization ID of the Event Hub Namespace to be used for diagnostic logs.')
 param eventHubAuthorizationRuleId string = ''
@@ -95,9 +95,6 @@ param allowConfigFileUpdates bool = true
 @description('Required. Emterprise Grade Cdn Status of the Static Site.')
 param enterpriseGradeCdnStatus string = 'Disabled'
 
-@description('Optional. Lock of the Static Site.')
-param lock string = 'CanNotDelete'
-
 @description('Required. Private DNS Resource Ids of the Static Site.')
 param privateDNSResourceIds string = '/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
 
@@ -127,7 +124,6 @@ param stagingEnvironmentPolicy string = 'Enabled'
 
 @description('Optional. System assigned identity of the Static Site.')
 param systemAssignedIdentity bool = true
-
 
 // Resource Group Deployment
 
@@ -172,7 +168,7 @@ module userAssignedManagedIdentity '../../../modules/Microsoft.ManagedIdentity/u
 }
 
 @description('Required. Name of the Log Analytics workspace.')
-param logAnalyticsWorkspaceName string = 'az-loganalytics-001'
+param logAnalyticsWorkspaceName string = 'az-loganalytics-002'
 
 @description('Optional. Service Tier: PerGB2018, Free, Standalone, PerGB or PerNode.')
 @allowed([
@@ -240,7 +236,7 @@ module LogAnalytics '../../../modules/Microsoft.OperationalInsights/workspaces/d
 
 @description('Required. Name of the Key Vault. Must be globally unique.')
 @maxLength(24)
-param keyvaultName string = 'az-kyv-app-001'
+param keyvaultName string = 'az-kyv-app-test-001'
 
 @description('Optional. Property that controls how data actions are authorized. When true, the key vault will use Role Based Access Control (RBAC) for authorization of data actions, and the access policies specified in vault properties will be ignored (warning: this is a preview feature). When false, the key vault will use the access policies specified in vault properties, and any policy stored on Azure Resource Manager will be ignored. If null or not specified, the vault is created with the default value of false. Note that management actions are always authorized with RBAC.')
 param enableRbacAuthorization bool = true
@@ -395,7 +391,6 @@ param sqlDatabases array = []
 param capabilitiesToAdd array = [
   'EnableServerless'
 ]
-
 
 module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.bicep' = if (choiceOfDatabase == 'CosmosDB' || choiceOfDatabase == 'All') {
   name: 'Deployment_CosmosDB'
@@ -597,9 +592,7 @@ module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choice
   ]
 }
 
-
 // Application Deployment
-
 
 // module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
 //   name: '${uniqueString(deployment().name)}-ContainerGroups'
