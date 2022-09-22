@@ -168,46 +168,46 @@ module Virtual_Network_Peering_Spoke_to_Hub '../../../../modules/Microsoft.Netwo
   ]
 }
 
-// module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
-//   scope: resourceGroup (resourceGroupName)
-//   name: '${uniqueString(deployment().name)}-VirtualMachines'
-//   params: {
-//     location: location
-//     // Required parameters
-//     adminUsername: 'azureadmin'
-//     imageReference: {
-//       offer: 'WindowsServer'
-//       publisher: 'MicrosoftWindowsServer'
-//       sku: '2019-Datacenter'
-//       version: 'latest'
-//     }
-//     nicConfigurations: [
-//       {
-//         ipConfigurations: [
-//           {
-//             name: 'ipconfig01'
-//             subnetId: VirtualNetworkSpoke.outputs.subnetResourceIds[0]
-//           }
-//         ]
-//         nicSuffix: '-nic-01'
-//         enableAcceleratedNetworking: false
-//       }
-//     ]
-//     encryptionAtHost: false
-//     osDisk: {
-//       diskSizeGB: '128'
-//       managedDisk: {
-//         storageAccountType: 'StandardSSD_LRS'
-//       }
-//     }
-//     osType: 'Windows'
-//     vmSize: 'Standard_B2s'
-//     // Non-required parameters
-//     adminPassword: 'Class123!'
-//     name: 'spoke-vm-win-01'
-//     enableDefaultTelemetry: false
-//   }
-//   dependsOn: [
-//     VirtualNetworkSpoke
-//   ]
-// }
+module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
+  scope: resourceGroup (resourceGroupName)
+  name: '${uniqueString(deployment().name)}-VirtualMachines'
+  params: {
+    location: location
+    // Required parameters
+    adminUsername: 'azureadmin'
+    imageReference: {
+      offer: 'WindowsServer'
+      publisher: 'MicrosoftWindowsServer'
+      sku: '2019-Datacenter'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        ipConfigurations: [
+          {
+            name: 'ipconfig01'
+            // subnetId: Virtual_Network_Spoke.outputs.subnetResourceIds[0]
+            subnetId: '/subscriptions/d3696aa4-85af-44e1-a83f-5c1516a22fff/resourceGroups/solutions-ne-rg/providers/Microsoft.Network/virtualNetworks/vnet-spoke/subnets/DefaultSubnet'
+          }
+        ]
+        nicSuffix: '-nic-01'
+        enableAcceleratedNetworking: false
+      }
+    ]
+    encryptionAtHost: false
+    osDisk: {
+      diskSizeGB: '128'
+      managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+      }
+    }
+    osType: 'Windows'
+    vmSize: 'Standard_B2s'
+    // Non-required parameters
+    adminPassword: 'Class123!'
+    name: 'spoke-vm-win-01'    
+  }
+  dependsOn: [
+    Virtual_Network_Spoke
+  ]
+}
