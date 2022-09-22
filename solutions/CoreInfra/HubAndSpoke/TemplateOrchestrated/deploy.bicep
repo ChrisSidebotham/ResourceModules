@@ -40,7 +40,7 @@ param eventHubAuthorizationRuleId string
 
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
 param eventHubName string
-module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
+module Resource_Groups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-rg'
   params: {
     name: resourceGroupName
@@ -63,10 +63,10 @@ module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurity
     diagnosticEventHubName: eventHubName
   }
   dependsOn: [
-    resourceGroups
+    Resource_Groups
   ]
 }
-module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+module Virtual_Network_Hub '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-VirtualNetwork_Hub'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -104,7 +104,7 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
     diagnosticEventHubName: eventHubName
   }
 }
-module VirtualNetworkSpoke '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
+module Virtual_Network_Spoke '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
   name: 'VirtualNetwork_Spoke'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -126,6 +126,88 @@ module VirtualNetworkSpoke '../../../../modules/Microsoft.Network/virtualNetwork
     diagnosticEventHubName: eventHubName
   }
   dependsOn: [
-    resourceGroups
+    Resource_Groups
   ]
 }
+
+module Virtual_Network_Peering_Hub_to_Spoke '../../../../modules/Microsoft.Network/virtualNetworks/virtualNetworkPeerings/deploy.bicep' = {
+  name: 'VirtualNetwork_Peering_Hub_to_Spoke'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'Peering-Hub-to-Spoke'
+    remoteVirtualNetworkId: Virtual_Network_Spoke.outputs.resourceId
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+    allowGatewayTransit: true
+    useRemoteGateways: false
+    localVnetName: vnet_hub
+  }
+  dependsOn: [
+    Resource_Groups
+    Virtual_Network_Hub
+    Virtual_Network_Spoke
+  ]
+}
+
+module Virtual_Network_Peering_Spoke_to_Hub '../../../../modules/Microsoft.Network/virtualNetworks/virtualNetworkPeerings/deploy.bicep' = {
+  name: 'VirtualNetwork_Peering_Spoke_to_Hub'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'Peering-Spoke-to-Hub'
+    remoteVirtualNetworkId: Virtual_Network_Hub.outputs.resourceId
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+    allowGatewayTransit: true
+    useRemoteGateways: false
+    localVnetName: vnetName2
+  }
+  dependsOn: [
+    Resource_Groups
+    Virtual_Network_Spoke
+    Virtual_Network_Hub
+  ]
+}
+
+// module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
+//   scope: resourceGroup (resourceGroupName)
+//   name: '${uniqueString(deployment().name)}-VirtualMachines'
+//   params: {
+//     location: location
+//     // Required parameters
+//     adminUsername: 'azureadmin'
+//     imageReference: {
+//       offer: 'WindowsServer'
+//       publisher: 'MicrosoftWindowsServer'
+//       sku: '2019-Datacenter'
+//       version: 'latest'
+//     }
+//     nicConfigurations: [
+//       {
+//         ipConfigurations: [
+//           {
+//             name: 'ipconfig01'
+//             subnetId: VirtualNetworkSpoke.outputs.subnetResourceIds[0]
+//           }
+//         ]
+//         nicSuffix: '-nic-01'
+//         enableAcceleratedNetworking: false
+//       }
+//     ]
+//     encryptionAtHost: false
+//     osDisk: {
+//       diskSizeGB: '128'
+//       managedDisk: {
+//         storageAccountType: 'StandardSSD_LRS'
+//       }
+//     }
+//     osType: 'Windows'
+//     vmSize: 'Standard_B2s'
+//     // Non-required parameters
+//     adminPassword: 'Class123!'
+//     name: 'spoke-vm-win-01'
+//     enableDefaultTelemetry: false
+//   }
+//   dependsOn: [
+//     VirtualNetworkSpoke
+//   ]
+// }
