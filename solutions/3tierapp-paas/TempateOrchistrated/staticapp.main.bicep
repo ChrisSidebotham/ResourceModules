@@ -1,6 +1,5 @@
 targetScope = 'subscription'
 
-
 @allowed([
   'EnableCassandra'
   'EnableTable'
@@ -12,32 +11,29 @@ targetScope = 'subscription'
 @description('Optional. List of Cosmos DB capabilities for the account.')
 param capabilitiesToAdd array = []
 
-
 //////////////////////////
 //   Input Parameters   //
 //////////////////////////
 @description('Optional. A parameter to control which Front facing deployments should be executed')
 @allowed([
-    'All'
-    'Enable Web App'
-    'Enable Web Static App'
+  'Enable Web Static App'
 ])
 param deploymentsToPerformFrontFacingLayer string
 
 @description('Optional. A parameter to control which Database deployments should be executed')
 @allowed([
-    'All'
-    'Enable Cosmos DB'
-    'Enable Serverless SQL'
-    'Enable PostresSQL'
+  'All'
+  'Enable Cosmos DB'
+  'Enable Serverless SQL'
+  'Enable PostresSQL'
 ])
 param deploymentsToPerformDatabaseLayer string
 
 @description('Optional. A parameter to control which Application layer deployments should be executed')
 @allowed([
-    'All'
-    'Enable Container Groups'
-    'Enable Container Registry'
+  'All'
+  'Enable Container Group'
+  'Enable Container Registry'
 ])
 param deploymentsToPerformApplicationLayer string
 
@@ -56,10 +52,10 @@ param tags object = {}
 @description('Resource Group location')
 param location string = 'northeurope'
 
-//Parameters for Static site
+//Parameters for Static site ALL DEFAULT IN JSON (optional) all REQUIRED IN HERE.
 
 @description('Required. Name of the Static Site.')
-param staticSiteName string = ''
+param staticSiteName string = 'az-ss-app-001'
 
 @description('Required. Allow Config File Updates of the Static Site.')
 param allowConfigFileUpdates bool = true
@@ -148,7 +144,7 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
     roleAssignments: [
       {
         principalIds: [
-         principalIds
+          principalIds
         ]
         roleDefinitionIdOrName: roleDefinitionIdOrName
       }
@@ -157,14 +153,10 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
     stagingEnvironmentPolicy: stagingEnvironmentPolicy
     systemAssignedIdentity: systemAssignedIdentity
     userAssignedIdentities: {
-      '${userAssignedManagedIdentity.outputs.resourceId}' : {}
+      '${userAssignedManagedIdentity.outputs.resourceId}': {}
     }
   }
 }
-
-
-
-//'/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
 
 // module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
 //   name: '${uniqueString(deployment().name)}-ContainerGroups'
