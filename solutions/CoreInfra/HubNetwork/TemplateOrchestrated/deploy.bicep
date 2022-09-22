@@ -26,9 +26,6 @@ param bastion_nsg_rules array
 @description('Required. Name of the virtual network.')
 param vnet_hub string
 
-@description('Required. Name of the virtual network.')
-param vnetName2 string = 'vnet-spoke'
-
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string
 
@@ -40,6 +37,7 @@ param eventHubAuthorizationRuleId string
 
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
 param eventHubName string
+
 module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-rg'
   params: {
@@ -103,29 +101,4 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     diagnosticEventHubName: eventHubName
   }
-}
-module VirtualNetworkSpoke '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
-  name: 'VirtualNetwork_Spoke'
-  scope: resourceGroup(resourceGroupName)
-  params: {
-    name: vnetName2
-    addressPrefixes: [
-      '192.168.101.0/24'
-    ]
-    subnets: [
-      {
-        addressPrefix: '192.168.101.0/26'
-        name: 'DefaultSubnet'
-      }
-    ]
-    tags: tags
-    lock: lock
-    diagnosticWorkspaceId: workspaceId
-    diagnosticStorageAccountId: diagnosticStorageAccountId
-    diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
-    diagnosticEventHubName: eventHubName
-  }
-  dependsOn: [
-    resourceGroups
-  ]
 }
