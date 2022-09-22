@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "resourceGroupName": {
-            "value": "az-rg-3tierapp-01"
+            "value": "az-rg-3tierapp-001"
         },
         "tags": {
             "value": {}
@@ -12,81 +12,42 @@
             "value": "NorthEurope"
         },
         "lock": {
-            "value": ""
+            "value": "CanNotDelete"
         },
         "choiceOfDatabase": {
             "value": "All"
         },
-        "diagnosticStorageAccountId": {
-            "value": ""
-        },
-        "workspaceId": {
-            "value": ""
-        },
-        "eventHubAuthorizationRuleId": {
-            "value": ""
-        },
-        "eventHubName": {
-            "value": ""
-        },
-        "diagnosticLogsRetentionInDays": {
-            "value": 365
-        },
         "userAssignedMIname": {
-            "value": "az-mi-3tierapp-01"
-        },
-        "userAssignedMIroleAssignments": {
-            "value": []
+            "value": "az-mi-3tierapp-001"
         },
         "keyvaultName": {
-            "value": "az-kv-3tierapp-01"
+            "value": "az-kv-3tierapp-001"
         },
         "enableRbacAuthorization": {
-            "value": false
-        },
-        "accessPolicies": {
-            "value": []
-        },
-        "secrets": {
-            "value": {
-                "attributesExp": 1702648632,
-                "attributesNbf": 10000,
-                "contentType": "Something",
-                "name": "secretName",
-                "value": "secretValue"
-            }
-        },
-        "enableVaultForDeployment": {
-            "value": true
-        },
-        "enableVaultForTemplateDeployment": {
-            "value": true
-        },
-        "enableVaultForDiskEncryption": {
             "value": true
         },
         "vaultSku": {
             "value": "premium"
         },
-        "keyvaultNetworkAcls": {
-            "value": {}
-        },
         "keyVaultPublicNetworkAccess": {
             "value": "Enabled"
         },
-        "keyvaultPrivateEndpoints": {
-            "value": []
+        "logAnalyticsWorkspaceName": {
+            "value": "az-loganalytics-3tierapp-001"
         },
-        "keyvaultRoleAssignments": {
-            "value": []
+        "publicNetworkAccessForIngestion": {
+            "value": "Enabled"
+        },
+        "publicNetworkAccessForQuery": {
+            "value": "Enabled"
         },
         "cosmosdbName": {
-            "value": "az-cosmosdb-3tierapp-01"
+            "value": "az-cosmosdb-3tierapp-001"
         },
         "locations": {
             "value": [
                 {
-                    "locationName": "North Europe",
+                    "locationName": "East US",
                     "failoverPriority": 0,
                     "isZoneRedundant": false
                 }
@@ -114,13 +75,18 @@
             ]
         },
         "postgreSqlServername": {
-            "value": "az-postgresql-3tierapp-01"
+            "value": "az-postgresql-3tierapp-001"
         },
         "postgreSqlAdministratorLogin": {
-            "value": "sqladminlogin"
+            "value": "psqladminlogin"
         },
         "postgreSqlAdministratorLoginPassword": {
-            "value": ""
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/<<subscriptionId>>/resourceGroups/az-rg-3tierapp-001/providers/Microsoft.KeyVault/vaults/az-kv-3tierapp-001"
+                },
+                "secretName": "psqladminlogin"
+            }
         },
         "postgreSqlSkuName": {
             "value": "Standard_D2s_v3"
@@ -133,12 +99,6 @@
         },
         "postgreSqlStorageSizeGB": {
             "value": 32
-        },
-        "postgreSqlDelegatedSubnetResourceId": {
-            "value": ""
-        },
-        "postgreSqlSkuNamePrivateDnsZoneArmResourceId": {
-            "value": ""
         },
         "postgreSqlDatabases": {
             "value": [
@@ -158,32 +118,25 @@
                 }
             ]
         },
-        "postgreSqlConfigurations": {
-            "value": [
-                {
-                    "name": "log_min_messages",
-                    "source": "user-override",
-                    "value": "INFO"
-                }
-            ]
-        },
         "postgreSqlAvailabilityZone": {
-            "value": ""
+            "value": "2"
         },
         "sqlServerName": {
-            "value": "az-sql-3tierapp-01"
+            "value": "az-sql-3tierapp-001"
         },
         "sqlAdministratorLogin": {
             "value": "sqladminlogin"
         },
         "sqlAdministratorLoginPassword": {
-            "value": ""
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/<<subscriptionId>>/resourceGroups/az-rg-3tierapp-001/providers/Microsoft.KeyVault/vaults/az-kv-3tierapp-001"
+                },
+                "secretName": "sqladminlogin"
+            }
         },
         "sqlAdministrators": {
             "value": {}
-        },
-        "sqlPrivateEndpoints": {
-            "value": []
         },
         "sqlPublicNetworkAccess": {
             "value": "Enabled"
@@ -198,17 +151,12 @@
                     "skuCapacity": 2,
                     "skuFamily": "Gen5",
                     "maxSizeBytes": 34359738368,
-                    "licenseType": "LicenseIncluded",
-                    "diagnosticLogsRetentionInDays": 7,
-                    "diagnosticStorageAccountId": "",
-                    "diagnosticWorkspaceId": "",
-                    "diagnosticEventHubAuthorizationRuleId": "",
-                    "diagnosticEventHubName": ""
+                    "licenseType": "LicenseIncluded"
                 }
             ]
         },
         "sqlSystemAssignedIdentity": {
-            "value": false
+            "value": true
         },
         "sqlFirewallRules": {
             "value": [
@@ -218,9 +166,6 @@
                     "startIpAddress": "0.0.0.0"
                 }
             ]
-        },
-        "sqlVirtualNetworkRules": {
-            "value": []
         },
         "sqlSecurityAlertPolicies": {
             "value": [
@@ -233,12 +178,6 @@
         },
         "vulnerabilityAssessmentsObj": {
             "value": {}
-        },
-        "minimalTlsVersion": {
-            "value": "1.2"
-        },
-        "sqlRoleAssignments": {
-            "value": []
         }
     }
 }
