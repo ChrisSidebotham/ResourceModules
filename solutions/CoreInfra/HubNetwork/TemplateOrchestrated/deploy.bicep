@@ -18,7 +18,10 @@ param location string = 'westeurope'
 param lock string = ''
 
 @description('Required. Name of the network security group for the Azure Bastion Host subnet.')
-param nsgBastionSubnetName string = '123'
+param nsgBastionSubnetName string
+
+@description('Required. NSG security rules for the Azure Bastion Host subnet.')
+param bastion_nsg_rules array
 
 @description('Required. Name of the virtual network.')
 param vnetName1 string = 'vnet-hub'
@@ -38,10 +41,10 @@ param eventHubAuthorizationRuleId string = ''
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
 param eventHubName string = ''
 
-var nsg_securityRules = loadJsonContent('.test/bastion_nsg_rules.json')
+//var nsg_securityRules = loadJsonContent('.test/bastion_nsg_rules.json')
 
 module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
-  name: uniqueString(deployment().name)
+  name: '${uniqueString(deployment().name)}-rg'
   params: {
     name: resourceGroupName
     location: location
@@ -50,11 +53,11 @@ module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/de
 }
 
 module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurityGroups/deploy.bicep' = {
-  name: 'NSG_Bastion_subnet'
+  name: '${uniqueString(deployment().name)}-bastion-subnet'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: nsgBastionSubnetName
-    securityRules: nsg_securityRules
+    securityRules: bastion_nsg_rules
     tags: tags
     lock: lock
     diagnosticWorkspaceId: workspaceId
@@ -67,7 +70,7 @@ module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurity
   ]
 }
 module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/deploy.bicep' = {
-  name: 'VirtualNetwork_Hub'
+  name: '${uniqueString(deployment().name)}-VirtualNetwork_Hub'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: vnetName1
