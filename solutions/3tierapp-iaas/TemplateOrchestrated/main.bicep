@@ -29,7 +29,7 @@ param location string = 'eastus2'
 param vnetName string = ''
 
 @description('Required. Virtual network address prefix.')
-param vnetAddressPrefix string = ''
+param vnetAddressPrefix string
 
 @description('Required. Virtual network bastion subnet address space.')
 param vnetBastionSubnetAddressPrefix string
