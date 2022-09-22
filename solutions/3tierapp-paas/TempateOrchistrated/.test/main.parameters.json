@@ -21,7 +21,7 @@
             "value": "az-mi-3tierapp-001"
         },
         "keyvaultName": {
-            "value": "az-kv-3tierapp-001"
+            "value": "az-kyv-app-test-001"
         },
         "enableRbacAuthorization": {
             "value": true
@@ -130,7 +130,7 @@
         "sqlAdministratorLoginPassword": {
             "reference": {
                 "keyVault": {
-                    "id": "/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/az-rg-3tierapp-data-001/providers/Microsoft.KeyVault/vaults/az-kv-3tierapp-001"
+                    "id": "/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/az-rg-3tierapp-data-001/providers/Microsoft.KeyVault/vaults/az-kyv-app-test-001"
                 },
                 "secretName": "sqladminlogin"
             }
