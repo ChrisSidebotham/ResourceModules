@@ -8,8 +8,17 @@
         "location": {
             "value": "westeurope"
         },
+        "lock": {
+            "value": ""
+        },
+        "tags": {
+            "value": {}
+        },
         "nsgBastionSubnetName": {
             "value": "nsg-hub-bastion-subnet"
+        },
+        "vnet_hub": {
+            "value": "vnet-hub"
         },
         "bastion_nsg_rules": {
             "value": [

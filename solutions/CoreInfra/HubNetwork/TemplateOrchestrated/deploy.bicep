@@ -4,10 +4,10 @@ targetScope = 'subscription'
 param resourceGroupName string
 
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
-param tags object = {}
+param tags object
 
 @description('Resource Group location')
-param location string = 'westeurope'
+param location string
 
 @allowed([
   ''
@@ -15,7 +15,7 @@ param location string = 'westeurope'
   'ReadOnly'
 ])
 @description('Optional. Specify the type of lock for all resources/resource group defined in this template.')
-param lock string = ''
+param lock string
 
 @description('Required. Name of the network security group for the Azure Bastion Host subnet.')
 param nsgBastionSubnetName string
@@ -24,25 +24,22 @@ param nsgBastionSubnetName string
 param bastion_nsg_rules array
 
 @description('Required. Name of the virtual network.')
-param vnetName1 string = 'vnet-hub'
+param vnet_hub string
 
 @description('Required. Name of the virtual network.')
 param vnetName2 string = 'vnet-spoke'
 
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
-param diagnosticStorageAccountId string = ''
+param diagnosticStorageAccountId string
 
 @description('Optional. Resource ID of the Log Analytics workspace to be used for diagnostic logs.')
-param workspaceId string = ''
+param workspaceId string
 
 @description('Optional. Authorization ID of the Event Hub Namespace to be used for diagnostic logs.')
-param eventHubAuthorizationRuleId string = ''
+param eventHubAuthorizationRuleId string
 
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
-param eventHubName string = ''
-
-//var nsg_securityRules = loadJsonContent('.test/bastion_nsg_rules.json')
-
+param eventHubName string
 module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-rg'
   params: {
@@ -73,7 +70,7 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
   name: '${uniqueString(deployment().name)}-VirtualNetwork_Hub'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: vnetName1
+    name: vnet_hub
     addressPrefixes: [
       '192.168.100.0/24'
     ]
