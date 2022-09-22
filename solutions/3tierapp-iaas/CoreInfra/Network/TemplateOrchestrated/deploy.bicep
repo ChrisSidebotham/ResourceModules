@@ -342,7 +342,7 @@ module udrDbSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.
   }
 }
 
-module asgWebSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgWebSubnet '../../../../../modules/Microsoft.Network/applicationSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Web-ASG-${time}'
   params: {
@@ -352,7 +352,7 @@ module asgWebSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy
   }
 }
 
-module asgAppSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgAppSubnet '../../../../../modules/Microsoft.Network/applicationSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-App-ASG-${time}'
   params: {
@@ -362,7 +362,7 @@ module asgAppSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy
   }
 }
 
-module asgDbSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgDbSubnet '../../../../../modules/Microsoft.Network/applicationSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-DB-ASG-${time}'
   params: {
