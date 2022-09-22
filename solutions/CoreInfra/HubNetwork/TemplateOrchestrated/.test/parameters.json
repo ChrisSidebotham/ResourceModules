@@ -23,6 +23,9 @@
         "bastionName": {
             "value": "az-bastion-001"
         },
+        "azureFirewallName": {
+            "value": "az-fw-001"
+        },
         "bastion_nsg_rules": {
             "value": [
                 {

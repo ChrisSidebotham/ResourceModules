@@ -26,8 +26,11 @@ param bastion_nsg_rules array
 @description('Required. Name of the virtual network.')
 param vnet_hub string
 
-@description('Required. Name of the virtual network.')
+@description('Required. Name of Azure Bastion.')
 param bastionName string
+
+@description('Required. Name of Azure Firewall.')
+param azureFirewallName string
 
 /*
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
@@ -137,5 +140,49 @@ module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.b
   dependsOn: [
     VirtualNetwork
     publicIPAddresses
+  ]
+}
+
+module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/deploy.bicep' = {
+
+  name: '${uniqueString(deployment().name)}-AzureFirewall'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: azureFirewallName
+    location: location
+    firewallPolicyId: ''
+    vNetId: VirtualNetwork.outputs.resourceId
+    tags: tags
+    lock: lock
+    // diagnosticWorkspaceId: workspaceId
+    // diagnosticStorageAccountId: diagnosticStorageAccountId
+    // diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
+    // diagnosticEventHubName: eventHubName
+  }
+  dependsOn: [
+    VirtualNetwork
+  ]
+}
+
+module Route_Table_Hub '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+
+  name: '${uniqueString(deployment().name)}-RouteTable-Spoke'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'subnet-to-AFW-udr-x-001'
+    // lock: 'CanNotDelete'
+    routes: [
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopIpAddress: Azure_Firewall.outputs.privateIp
+          nextHopType: 'VirtualAppliance'
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    Azure_Firewall
   ]
 }
