@@ -1,32 +1,6 @@
 targetScope = 'subscription'
 
-//////////////////////////
-//   Input Parameters   //
-//////////////////////////
-@description('Optional. A parameter to control which deployments should be executed')
-@allowed([
-    'All'
-    'Web App'
-    'Web Static App'
-])
-param deploymentsToPerformFrontFacingLayer string
 
-@description('Optional. A parameter to control which deployments should be executed')
-@allowed([
-    'All'
-    'Cosmos DB'
-    'Serverless SQL'
-    'PostresSQL'
-])
-param deploymentsToPerformDatabaseLayer string
-
-@description('Optional. A parameter to control which deployments should be executed')
-@allowed([
-    'All'
-    'Container Groups'
-    'Container Registry'
-])
-param deploymentsToPerformApplicationLayer string
 
 @description('Optional. Specifies the location for resources.')
 param location string
@@ -46,21 +20,21 @@ var rgParam = {
     location: 'northeurope'
     tags: []
 }
-// Static Site Params
-var staticSiteParam = { //Inpput subscription IDs?
-    name: 'staticSite-random-name'
-    allowConfigFileUpdates: true
-    enterpriseGradeCdnStatus: 'Disabled'
-    lock: 'CanNotDelete'
-    privateDNSResourceIds: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
-    service: 'staticSites'
-    subnetResourceId: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/virtualNetworks/adp-<<namePrefix>>-az-vnet-x-001/subnets/<<namePrefix>>-az-subnet-x-005-privateEndpoints'
-    principalIds: '<<deploymentSpId>>'
-    roleDefinitionIdOrName: 'Reader'
-    sku: 'Standard'
-    stagingEnvironmentPolicy: 'Enabled'
-    systemAssignedIdentity: true
-}
+// // Static Site Params
+// var staticSiteParam = { //Inpput subscription IDs?
+//     name: 'staticSite-random-name'
+//     allowConfigFileUpdates: true
+//     enterpriseGradeCdnStatus: 'Disabled'
+//     lock: 'CanNotDelete'
+//     privateDNSResourceIds: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurestaticapps.net'
+//     service: 'staticSites'
+//     subnetResourceId: '/subscriptions/<<subscriptionId>>/resourceGroups/validation-rg/providers/Microsoft.Network/virtualNetworks/adp-<<namePrefix>>-az-vnet-x-001/subnets/<<namePrefix>>-az-subnet-x-005-privateEndpoints'
+//     principalIds: '<<deploymentSpId>>'
+//     roleDefinitionIdOrName: 'Reader'
+//     sku: 'Standard'
+//     stagingEnvironmentPolicy: 'Enabled'
+//     systemAssignedIdentity: true
+// }
 // User Assigned Identity Role Assignment on subscription scope
 var msiRoleAssignmentParam = {
     roleDefinitionIdOrName: 'Contributor'

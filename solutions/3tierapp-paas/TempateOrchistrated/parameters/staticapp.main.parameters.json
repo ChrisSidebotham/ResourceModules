@@ -1,0 +1,235 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceGroupName": {
+            "value": ""
+        },
+        "tags": {
+            "value": {}
+        },
+        "location": {
+            "value": ""
+        },
+        "lock": {
+            "value": ""
+        },
+        "staticSiteName": {
+            "value": ""
+        },
+        "allowConfigFileUpdates": {
+            "value": true
+        },
+        "privateDNSResourceIds": {
+            "value": ""
+        },
+        "enterpriseGradeCdnStatus": {
+            "value": ""
+        },
+        "service": {
+            "value": ""
+        },
+        "subnetResourceId": {
+            "value": ""
+        },
+        "roleDefinitionIdOrName": {
+            "value": ""
+        },
+        "principalIds": {
+            "value": ""
+        },
+        "systemAssignedIdentity": {
+            "value": true
+        },
+        "sku": {
+            "value": ""
+        },
+        "stagingEnvironmentPolicy": {
+            "value": "END HERE"
+        },
+        "enableVaultForDeployment": {
+            "value": true
+        },
+        "enableVaultForTemplateDeployment": {
+            "value": true
+        },
+        "enableVaultForDiskEncryption": {
+            "value": true
+        },
+        "vaultSku": {
+            "value": "premium"
+        },
+        "keyvaultNetworkAcls": {
+            "value": {}
+        },
+        "keyVaultPublicNetworkAccess": {
+            "value": "Enabled"
+        },
+        "keyvaultPrivateEndpoints": {
+            "value": []
+        },
+        "keyvaultRoleAssignments": {
+            "value": []
+        },
+        "cosmosdbName": {
+            "value": "az-cosmosdb-3tierapp-01"
+        },
+        "locations": {
+            "value": [
+                {
+                    "locationName": "North Europe",
+                    "failoverPriority": 0,
+                    "isZoneRedundant": false
+                }
+            ]
+        },
+        "sqlDatabases": {
+            "value": [
+                {
+                    "name": "az-sql-x-001",
+                    "containers": [
+                        {
+                            "name": "container-001",
+                            "paths": [
+                                "/myPartitionKey"
+                            ],
+                            "kind": "Hash"
+                        }
+                    ]
+                }
+            ]
+        },
+        "capabilitiesToAdd": {
+            "value": [
+                "EnableServerless"
+            ]
+        },
+        "postgreSqlServername": {
+            "value": "az-postgresql-3tierapp-01"
+        },
+        "postgreSqlAdministratorLogin": {
+            "value": "sqladminlogin"
+        },
+        "postgreSqlAdministratorLoginPassword": {
+            "value": ""
+        },
+        "postgreSqlSkuName": {
+            "value": "Standard_D2s_v3"
+        },
+        "postgreSqlTier": {
+            "value": "GeneralPurpose"
+        },
+        "postgreSqlGeoRedundantBackup": {
+            "value": "Disabled"
+        },
+        "postgreSqlStorageSizeGB": {
+            "value": 32
+        },
+        "postgreSqlDelegatedSubnetResourceId": {
+            "value": ""
+        },
+        "postgreSqlSkuNamePrivateDnsZoneArmResourceId": {
+            "value": ""
+        },
+        "postgreSqlDatabases": {
+            "value": [
+                {
+                    "name": "testdb1",
+                    "collation": "en_US.utf8",
+                    "charset": "UTF8"
+                }
+            ]
+        },
+        "postgreSqlFirewallRules": {
+            "value": [
+                {
+                    "name": "AllowAllWindowsAzureIps",
+                    "endIpAddress": "0.0.0.0",
+                    "startIpAddress": "0.0.0.0"
+                }
+            ]
+        },
+        "postgreSqlConfigurations": {
+            "value": [
+                {
+                    "name": "log_min_messages",
+                    "source": "user-override",
+                    "value": "INFO"
+                }
+            ]
+        },
+        "postgreSqlAvailabilityZone": {
+            "value": ""
+        },
+        "sqlServerName": {
+            "value": "az-sql-3tierapp-01"
+        },
+        "sqlAdministratorLogin": {
+            "value": "sqladminlogin"
+        },
+        "sqlAdministratorLoginPassword": {
+            "value": ""
+        },
+        "sqlAdministrators": {
+            "value": {}
+        },
+        "sqlPrivateEndpoints": {
+            "value": []
+        },
+        "sqlPublicNetworkAccess": {
+            "value": "Enabled"
+        },
+        "sqlServerDatabases": {
+            "value": [
+                {
+                    "name": "az-sqldb-3tierapp-01",
+                    "collation": "SQL_Latin1_General_CP1_CI_AS",
+                    "skuTier": "GeneralPurpose",
+                    "skuName": "GP_Gen5_2",
+                    "skuCapacity": 2,
+                    "skuFamily": "Gen5",
+                    "maxSizeBytes": 34359738368,
+                    "licenseType": "LicenseIncluded",
+                    "diagnosticLogsRetentionInDays": 7,
+                    "diagnosticStorageAccountId": "",
+                    "diagnosticWorkspaceId": "",
+                    "diagnosticEventHubAuthorizationRuleId": "",
+                    "diagnosticEventHubName": ""
+                }
+            ]
+        },
+        "sqlSystemAssignedIdentity": {
+            "value": false
+        },
+        "sqlFirewallRules": {
+            "value": [
+                {
+                    "name": "AllowAllWindowsAzureIps",
+                    "endIpAddress": "0.0.0.0",
+                    "startIpAddress": "0.0.0.0"
+                }
+            ]
+        },
+        "sqlVirtualNetworkRules": {
+            "value": []
+        },
+        "sqlSecurityAlertPolicies": {
+            "value": [
+                {
+                    "name": "Default",
+                    "state": "Enabled",
+                    "emailAccountAdmins": true
+                }
+            ]
+        },
+        "vulnerabilityAssessmentsObj": {
+            "value": {}
+        },
+        "minimalTlsVersion": {
+            "value": "1.2"
+        },
+        "sqlRoleAssignments": {
+            "value": []
+        }
+    }
+}
