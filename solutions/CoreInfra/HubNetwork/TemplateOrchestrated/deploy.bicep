@@ -26,6 +26,7 @@ param bastion_nsg_rules array
 @description('Required. Name of the virtual network.')
 param vnet_hub string
 
+/*
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string
 
@@ -37,6 +38,7 @@ param eventHubAuthorizationRuleId string
 
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
 param eventHubName string
+*/
 
 module resourceGroups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-rg'
@@ -55,10 +57,12 @@ module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurity
     securityRules: bastion_nsg_rules
     tags: tags
     lock: lock
+    /*
     diagnosticWorkspaceId: workspaceId
     diagnosticStorageAccountId: diagnosticStorageAccountId
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     diagnosticEventHubName: eventHubName
+    */
   }
   dependsOn: [
     resourceGroups
@@ -96,9 +100,39 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
     ]
     tags: tags
     lock: lock
+    /*
     diagnosticWorkspaceId: workspaceId
     diagnosticStorageAccountId: diagnosticStorageAccountId
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     diagnosticEventHubName: eventHubName
+    */
   }
+}
+module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresses/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastion-pip'
+  params: {
+    location: location
+    name: 'az-pip-bastion-001'
+    skuName: 'Standard'
+    publicIPAllocationMethod: 'Static'
+  }
+  dependsOn: [
+    resourceGroups
+    VirtualNetwork
+  ]
+}
+
+module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastionHosts'
+  params: {
+    location: location
+    name: 'az-bas-add-001'
+    vNetId: VirtualNetwork.outputs.resourceId //to-do. Change to loop
+  }
+  dependsOn: [
+    VirtualNetwork
+    publicIPAddresses
+  ]
 }
