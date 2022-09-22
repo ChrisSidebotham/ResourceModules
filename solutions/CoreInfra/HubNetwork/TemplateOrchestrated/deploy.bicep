@@ -83,12 +83,12 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
       '192.168.100.0/24'
     ]
     subnets: [
-      {
-        addressPrefix: '192.168.100.0/26'
-        name: 'Subnet-Hub'
-        //  networkSecurityGroupId: ''
-        //  routeTableId: ''
-      }
+      // {
+      //   addressPrefix: '192.168.100.0/26'
+      //   name: 'Subnet-Hub'
+      //   //  networkSecurityGroupId: ''
+      //   //  routeTableId: ''
+      // }
       {
         addressPrefix: '192.168.100.64/26'
         name: 'AzureBastionSubnet'
@@ -166,11 +166,12 @@ module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/depl
 
 module Route_Table_Hub '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
 
-  name: '${uniqueString(deployment().name)}-RouteTable-Spoke'
+  name: '${uniqueString(deployment().name)}-RouteTable-Hub'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: 'subnet-to-AFW-udr-x-001'
     // lock: 'CanNotDelete'
+
     routes: [
       {
         name: 'default'
@@ -184,5 +185,19 @@ module Route_Table_Hub '../../../../modules/Microsoft.Network/routeTables/deploy
   }
   dependsOn: [
     Azure_Firewall
+  ]
+}
+
+module Hub_Subnet '../../../../modules/Microsoft.Network/virtualNetworks/subnets/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-Subnet-Hub'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'Subnet-Hub'
+    addressPrefix: '192.168.100.0/26'
+    routeTableId: Route_Table_Hub.outputs.resourceId
+    virtualNetworkName: VirtualNetwork.outputs.name
+  }
+  dependsOn: [
+    Route_Table_Hub
   ]
 }
