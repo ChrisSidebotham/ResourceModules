@@ -6,6 +6,9 @@ param resourceGroupName string
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
 param tags object
 
+@description('Azure Firewall Name')
+param azureFirewallName string
+
 @description('Resource Group location')
 param location string
 
@@ -167,22 +170,6 @@ module Virtual_Network_Peering_Spoke_to_Hub '../../../../modules/Microsoft.Netwo
     Virtual_Network_Hub
   ]
 }
-
-
-// module Network_Interface './Microsoft.Network/networkInterfaces/deploy.bicep' = {
-//   name: '${uniqueString(deployment().name)}-NetworkInterfaces'
-//   params: {
-//     // Required parameters
-//     ipConfigurations: [
-//       {
-//         name: 'ipconfig01'
-//         subnetResourceId: Virtual_Network_Spoke.outputs.subnetResourceIds[0]
-//       }
-//     ]
-//     name: '<<namePrefix>>-az-nic-min-001'
-//   }
-// }
-
 module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
   scope: resourceGroup (resourceGroupName)
   name: '${uniqueString(deployment().name)}-VirtualMachines'
@@ -225,4 +212,48 @@ module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/de
   dependsOn: [
     Virtual_Network_Spoke
   ]
+}
+
+// add Azure Firewall module
+
+module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-AzureFirewall'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: azureFirewallName
+    location: location
+    firewallPolicyId: ''
+    vNetId: Virtual_Network_Hub.outputs.resourceId
+    tags: tags
+    lock: lock
+    diagnosticWorkspaceId: workspaceId
+    diagnosticStorageAccountId: diagnosticStorageAccountId
+    diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
+    diagnosticEventHubName: eventHubName
+  }
+  dependsOn: [
+    Resource_Groups
+    Virtual_Network_Hub
+  ]
+}
+
+// deploying a route table for the spoke vnet
+
+module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-RouteTable-Spoke'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'VM-to-AFW-udr-x-001'
+    lock: 'CanNotDelete'
+    routes: [
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopIpAddress: Azure_Firewall.outputs.privateIp
+          nextHopType: 'VirtualAppliance'
+        }
+      }
+    ]
+  }
 }
