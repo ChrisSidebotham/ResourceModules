@@ -6,6 +6,9 @@ param resourceGroupName string
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
 param tags object
 
+@description('Required. Name of the virtual network.')
+param bastionName string
+
 @description('Azure Firewall Name')
 param azureFirewallName string
 
@@ -249,11 +252,40 @@ module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/depl
       {
         name: 'default'
         properties: {
-          addressPrefix: '0.0.0.0/0'
+          addressPrefix: '192.168.101/16'
           nextHopIpAddress: Azure_Firewall.outputs.privateIp
           nextHopType: 'VirtualAppliance'
         }
       }
     ]
   }
+}
+
+module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresses/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastion-pip'
+  params: {
+    location: location
+    name: 'az-pip-bastion-001'
+    skuName: 'Standard'
+    publicIPAllocationMethod: 'Static'
+  }
+  dependsOn: [
+    Resource_Groups
+  ]
+}
+
+module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastionHosts'
+  params: {
+    location: location
+    name: bastionName
+    vNetId: Virtual_Network_Hub.outputs.resourceId
+    azureBastionSubnetPublicIpId: publicIPAddresses.outputs.resourceId
+  }
+  dependsOn: [
+    Virtual_Network_Hub
+    publicIPAddresses
+  ]
 }
