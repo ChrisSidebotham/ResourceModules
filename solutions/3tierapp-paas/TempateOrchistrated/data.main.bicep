@@ -7,7 +7,7 @@ param resourceGroupName string
 param tags object = {}
 
 @description('Optional. Location of Resources/Resource group deployed in this file')
-param location string = 'northeurope'
+param location string = 'UKSouth'
 
 @allowed([
   ''
@@ -24,7 +24,7 @@ param lock string = ''
   'SQLdatabase'
 ])
 @description('Optional. To choose one of the database service')
-param choiceOfDatabase string = 'CosmosDB'
+param choiceOfDatabase string = 'SQLdatabase'
 
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string = ''
@@ -75,7 +75,7 @@ module userAssignedManagedIdentity '../../../modules/Microsoft.ManagedIdentity/u
 
 @description('Required. Name of the Key Vault. Must be globally unique.')
 @maxLength(24)
-param keyvaultName string
+param keyvaultName string = 'az-kyv-app-001'
 
 @description('Optional. Property that controls how data actions are authorized. When true, the key vault will use Role Based Access Control (RBAC) for authorization of data actions, and the access policies specified in vault properties will be ignored (warning: this is a preview feature). When false, the key vault will use the access policies specified in vault properties, and any policy stored on Azure Resource Manager will be ignored. If null or not specified, the vault is created with the default value of false. Note that management actions are always authorized with RBAC.')
 param enableRbacAuthorization bool = false
@@ -154,6 +154,9 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     diagnosticLogsRetentionInDays: diagnosticLogsRetentionInDays
   }
+  dependsOn: [
+    userAssignedManagedIdentity
+  ]
 }
 
 // CosmosDB
@@ -210,7 +213,7 @@ param postgreSqlAdministratorLogin string = 'sqladminlogin'
 
 @description('Required. The administrator login password.')
 @secure()
-param postgreSqlAdministratorLoginPassword string = ''
+param postgreSqlAdministratorLoginPassword string
 
 @description('Required. The name of the sku, typically, tier + family + cores, e.g. Standard_D4s_v3.')
 param postgreSqlSkuName string = 'Standard_D2s_v3'
@@ -276,7 +279,7 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
     name: postgreSqlServername
     location: location
     administratorLogin: postgreSqlAdministratorLogin
-    administratorLoginPassword: postgreSqlAdministratorLoginPassword
+    administratorLoginPassword: 'sqladminloginpassword'
     skuName: postgreSqlSkuName
     tier: postgreSqlTier
     geoRedundantBackup: postgreSqlGeoRedundantBackup
@@ -293,12 +296,15 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     diagnosticLogsRetentionInDays: diagnosticLogsRetentionInDays
   }
+  dependsOn: [
+    keyvault
+  ]
 }
 
 // SQL
 
 @description('Optional. Name of SQL server.')
-param sqlServerName string = ''
+param sqlServerName string = 'az-sqlsrv-01'
 
 @description('Conditional. The administrator username for the server. Required if no `administrators` object for AAD authentication is provided.')
 param sqlAdministratorLogin string = 'sqladminlogin'
@@ -373,4 +379,7 @@ module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choice
     minimalTlsVersion: minimalTlsVersion
     roleAssignments: sqlRoleAssignments
   }
+  dependsOn: [
+    keyvault
+  ]
 }
