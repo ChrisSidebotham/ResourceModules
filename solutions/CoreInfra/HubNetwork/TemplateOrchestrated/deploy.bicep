@@ -26,6 +26,9 @@ param bastion_nsg_rules array
 @description('Required. Name of the virtual network.')
 param vnet_hub string
 
+@description('Required. Name of the virtual network.')
+param bastionName string
+
 /*
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string
@@ -119,7 +122,6 @@ module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresse
   }
   dependsOn: [
     resourceGroups
-    VirtualNetwork
   ]
 }
 
@@ -128,8 +130,9 @@ module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.b
   name: '${uniqueString(deployment().name)}-bastionHosts'
   params: {
     location: location
-    name: 'az-bas-add-001'
-    vNetId: VirtualNetwork.outputs.resourceId //to-do. Change to loop
+    name: bastionName
+    vNetId: VirtualNetwork.outputs.resourceId
+    azureBastionSubnetPublicIpId: publicIPAddresses.outputs.resourceId
   }
   dependsOn: [
     VirtualNetwork

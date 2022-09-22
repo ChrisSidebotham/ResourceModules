@@ -20,6 +20,9 @@
         "vnet_hub": {
             "value": "vnet-hub"
         },
+        "bastionName": {
+            "value": "az-bastion-001"
+        },
         "bastion_nsg_rules": {
             "value": [
                 {
