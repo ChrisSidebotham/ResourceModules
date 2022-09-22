@@ -108,3 +108,31 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
     */
   }
 }
+module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresses/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastion-pip'
+  params: {
+    location: location
+    name: 'az-pip-bastion-001'
+    skuName: 'Standard'
+    publicIPAllocationMethod: 'Static'
+  }
+  dependsOn: [
+    resourceGroups
+    VirtualNetwork
+  ]
+}
+
+module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastionHosts'
+  params: {
+    location: location
+    name: 'az-bas-add-001'
+    vNetId: VirtualNetwork.outputs.resourceId //to-do. Change to loop
+  }
+  dependsOn: [
+    VirtualNetwork
+    publicIPAddresses
+  ]
+}
