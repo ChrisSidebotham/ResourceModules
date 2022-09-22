@@ -168,6 +168,21 @@ module Virtual_Network_Peering_Spoke_to_Hub '../../../../modules/Microsoft.Netwo
   ]
 }
 
+
+// module Network_Interface './Microsoft.Network/networkInterfaces/deploy.bicep' = {
+//   name: '${uniqueString(deployment().name)}-NetworkInterfaces'
+//   params: {
+//     // Required parameters
+//     ipConfigurations: [
+//       {
+//         name: 'ipconfig01'
+//         subnetResourceId: Virtual_Network_Spoke.outputs.subnetResourceIds[0]
+//       }
+//     ]
+//     name: '<<namePrefix>>-az-nic-min-001'
+//   }
+// }
+
 module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
   scope: resourceGroup (resourceGroupName)
   name: '${uniqueString(deployment().name)}-VirtualMachines'
@@ -186,8 +201,8 @@ module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/de
         ipConfigurations: [
           {
             name: 'ipconfig01'
-            // subnetId: Virtual_Network_Spoke.outputs.subnetResourceIds[0]
-            subnetId: '/subscriptions/d3696aa4-85af-44e1-a83f-5c1516a22fff/resourceGroups/solutions-ne-rg/providers/Microsoft.Network/virtualNetworks/vnet-spoke/subnets/DefaultSubnet'
+            subnetResourceId: Virtual_Network_Spoke.outputs.subnetResourceIds[0]
+            // subnetId: '/subscriptions/d3696aa4-85af-44e1-a83f-5c1516a22fff/resourceGroups/solutions-ne-rg/providers/Microsoft.Network/virtualNetworks/vnet-spoke/subnets/DefaultSubnet'
           }
         ]
         nicSuffix: '-nic-01'
