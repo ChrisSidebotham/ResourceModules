@@ -94,17 +94,7 @@ param stagingEnvironmentPolicy string = 'Enabled'
 @description('Required. System assigned identity of the Static Site.')
 param systemAssignedIdentity bool = true
 
-///////////////////////////////
-//   Default Deployment Properties   //
-///////////////////////////////
-@description('Static Siteparams')
-param rgParam object
-
-@description('Static Site params')
-param staticSiteParam object
-
-// @description('Container Group location')
-// param containerGroupParam object
+// Resource Group Deployment
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
@@ -112,7 +102,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-// User managed identity
+// User managed identity Deployment
 
 @description('Optional. Name of the User Assigned Identity.') //DO THE PARAMS FOR
 param userAssignedMIname string = newGuid()
@@ -131,6 +121,8 @@ module userAssignedManagedIdentity '../../../modules/Microsoft.ManagedIdentity/u
     tags: tags
   }
 }
+
+// Static Site Deployment
 
 module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-StaticSites'
