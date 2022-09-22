@@ -302,6 +302,9 @@ module databaseTierDeployment '../CoreInfra/Tiers/TemplateOrchestrated/deploy.bi
     eventHubAuthorizationRuleId: eventHubAuthorizationRuleId
     eventHubName: eventHubName
   }
+  dependsOn: [
+    networking
+  ]
 }
 
 module applicationTierDeployment '../CoreInfra/Tiers/TemplateOrchestrated/deploy.bicep' = {
@@ -332,6 +335,7 @@ module applicationTierDeployment '../CoreInfra/Tiers/TemplateOrchestrated/deploy
   }
   dependsOn: [
     databaseTierDeployment
+    networking
   ]
 }
 
@@ -363,5 +367,6 @@ module webTierDeployment '../CoreInfra/Tiers/TemplateOrchestrated/deploy.bicep' 
   }
   dependsOn: [
     applicationTierDeployment
+    networking
   ]
 }
