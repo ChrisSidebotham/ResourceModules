@@ -227,7 +227,7 @@ jobs:
 
             # Get target files for modules dependencies
             $DependencyParameterFilePaths = [System.Collections.ArrayList]@()
-            $DependencyParameterFolders = Get-ChildItem -Path (Join-Path '$(System.DefaultWorkingDirectory)' 'utilities' 'pipelines' 'dependencies') -Recurse -Filter 'parameters' -Directory
+            $DependencyParameterFolders = Get-ChildItem -Path (Join-Path '$(System.DefaultWorkingDirectory)' 'self' 'utilities' 'pipelines' 'dependencies') -Recurse -Filter 'parameters' -Directory
             foreach ($FolderPath in $DependencyParameterFolders.FullName) {
                 $DependencyParameterFilePaths += Get-ChildItem -Path $FolderPath -Recurse -Filter '*.json'
             }
