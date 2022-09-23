@@ -27,7 +27,7 @@
             "value": "az-mi-<<namePrefix>>-001"
         },
         "keyvaultName": {
-            "value": "az-kyv-<<namePrefix>>-001"
+            "value": "azkv<<namePrefix>>"
         },
         "enableRbacAuthorization": {
             "value": true
@@ -39,7 +39,7 @@
             "value": "Enabled"
         },
         "logAnalyticsWorkspaceName": {
-            "value": "az-loganalytics-<<namePrefix>>-001"
+            "value": "az-law-<<namePrefix>>-001"
         },
         "publicNetworkAccessForIngestion": {
             "value": "Enabled"
@@ -81,7 +81,7 @@
             ]
         },
         "postgreSqlServername": {
-            "value": "az-postgresql-<<namePrefix>>-001"
+            "value": "az-psql-<<namePrefix>>-001"
         },
         "postgreSqlAdministratorLogin": {
             "value": "psqladminlogin"
