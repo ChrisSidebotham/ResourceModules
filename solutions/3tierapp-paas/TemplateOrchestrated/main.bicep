@@ -342,6 +342,17 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
 
 // Static Site Deployment
 
+@description('Optional. Location for static web app.')
+@allowed([
+  'westus2'
+  'centralus'
+  'eastus2'
+  'westeurope'
+  'eastasia'
+  'eastasiastage'
+])
+param staticAppLocation string = 'eastus2'
+
 module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = if (deploymentsToPerformFrontFacingLayer == 'Enable Web Static App') {
   name: '${uniqueString(deployment().name)}-StaticSites'
   scope: resourceGroupFront
@@ -360,6 +371,7 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = i
     userAssignedIdentities: {
       '${userAssignedManagedIdentity.outputs.resourceId}': {}
     }
+    location: staticAppLocation
   }
 }
 
