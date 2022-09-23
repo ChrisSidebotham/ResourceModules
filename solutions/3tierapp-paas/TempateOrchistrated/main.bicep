@@ -232,6 +232,13 @@ module LogAnalytics '../../../modules/Microsoft.OperationalInsights/workspaces/d
   }
 }
 
+// deployment scripts
+
+module passwordGen '.test/pwdgenerator.bicep' = {
+  name: 'passwordGen_deploymentScript'
+  scope: resourceGroupFront
+}
+
 // key vault
 
 @description('Required. Name of the Key Vault. Must be globally unique.')
@@ -311,14 +318,14 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
           attributesNbf: 10000
           contentType: 'postgresql admin credentials'
           name: 'psqladminlogin'
-          value: newguid
+          value: passwordGen.outputs.passwordText_psql
         }
         {
           attributesExp: 1702648632
           attributesNbf: 10000
           contentType: 'sql server admin credentials'
           name: 'sqladminlogin'
-          value: newguid
+          value: passwordGen.outputs.passwordText_sql
         }
       ]
     }
@@ -422,10 +429,6 @@ param postgreSqlServername string = 'az-postgresql-001'
 @description('Required. The administrator login name of a server. Can only be specified when the PostgreSQL server is being created.')
 param postgreSqlAdministratorLogin string = 'sqladminlogin'
 
-@description('Required. The administrator login password.')
-@secure()
-param postgreSqlAdministratorLoginPassword string = newGuid()
-
 @description('Required. The name of the sku, typically, tier + family + cores, e.g. Standard_D4s_v3.')
 param postgreSqlSkuName string = 'Standard_D2s_v3'
 
@@ -490,7 +493,7 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
     name: postgreSqlServername
     location: location
     administratorLogin: postgreSqlAdministratorLogin
-    administratorLoginPassword: postgreSqlAdministratorLoginPassword
+    administratorLoginPassword: passwordGen.outputs.passwordText_psql
     skuName: postgreSqlSkuName
     tier: postgreSqlTier
     geoRedundantBackup: postgreSqlGeoRedundantBackup
@@ -519,10 +522,6 @@ param sqlServerName string = 'az-sqlsrv-01'
 
 @description('Conditional. The administrator username for the server. Required if no `administrators` object for AAD authentication is provided.')
 param sqlAdministratorLogin string = 'sqladminlogin'
-
-@description('Conditional. The administrator login password. Required if no `administrators` object for AAD authentication is provided.')
-@secure()
-param sqlAdministratorLoginPassword string = newGuid()
 
 @description('Conditional. The Azure Active Directory (AAD) administrator authentication. Required if no `administratorLogin` & `administratorLoginPassword` is provided.')
 param sqlAdministrators object = {}
@@ -569,7 +568,7 @@ module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choice
     name: sqlServerName
     location: location
     administratorLogin: sqlAdministratorLogin
-    administratorLoginPassword: sqlAdministratorLoginPassword
+    administratorLoginPassword: passwordGen.outputs.passwordText_sql
     administrators: sqlAdministrators
     publicNetworkAccess: sqlPublicNetworkAccess
     privateEndpoints: sqlPrivateEndpoints
@@ -594,29 +593,48 @@ module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choice
 
 // Application Deployment
 
-// module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
-//   name: '${uniqueString(deployment().name)}-ContainerGroups'
-//   scope: resourceGroupApp
-//   params: {
-//     // Required parameters
-//     containername: '<<namePrefix>>-az-aci-x-001'
-//     image: 'mcr.microsoft.com/azuredocs/aci-helloworld'
-//     name: '<<namePrefix>>-az-acg-x-001'
-//     // Non-required parameters
-//     lock: 'CanNotDelete'
-//     ports: [
-//       {
-//         port: '80'
-//         protocol: 'Tcp'
-//       }
-//       {
-//         port: '443'
-//         protocol: 'Tcp'
-//       }
-//     ]
-//     systemAssignedIdentity: true
-//     userAssignedIdentities: {
-//       '/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
-//     }
-//   }
-// }
+@description('Required. Name for the container group.')
+param containerGroupName string = 'az-acg-x-001'
+
+@description('Required. Name for the container.')
+param containerName string = 'az-aci-x-001'
+
+@description('Required. Name of the image.')
+param image string = 'mcr.microsoft.com/azuredocs/aci-helloworld'
+
+@description('Optional. The operating system type required by the containers in the container group. - Windows or Linux.')
+param osType string = 'Linux'
+
+@description('Optional. Specifies if the IP is exposed to the public internet or private VNET. - Public or Private.')
+param ipAddressType string = 'Public'
+
+@description('Optional. Port to open on the container and the public IP address.')
+param containerPorts array = [
+  {
+    port: '80'
+    protocol: 'Tcp'
+  }
+  {
+    port: '443'
+    protocol: 'Tcp'
+  }
+]
+module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-ContainerGroups'
+  scope: resourceGroupApp
+  params: {
+    // Required parameters
+    containername: containerName
+    image: image
+    name: containerGroupName
+    // Non-required parameters
+    lock: lock
+    ports: containerPorts
+    ipAddressType: ipAddressType
+    osType: osType
+    systemAssignedIdentity: true
+    userAssignedIdentities: {
+      '${userAssignedManagedIdentity.outputs.resourceId}': {}
+    }
+  }
+}

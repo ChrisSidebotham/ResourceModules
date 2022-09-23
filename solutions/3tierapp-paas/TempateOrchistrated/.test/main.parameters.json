@@ -21,7 +21,7 @@
             "value": "az-mi-3tierapp-001"
         },
         "keyvaultName": {
-            "value": "az-kyv-app-test-001"
+            "value": "az-kyv-3tierapp-001"
         },
         "enableRbacAuthorization": {
             "value": true
@@ -80,14 +80,6 @@
         "postgreSqlAdministratorLogin": {
             "value": "psqladminlogin"
         },
-        "postgreSqlAdministratorLoginPassword": {
-            "reference": {
-                "keyVault": {
-                    "id": "/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/az-rg-3tierapp-front-001/providers/Microsoft.KeyVault/vaults/az-kyv-app-test-001"
-                },
-                "secretName": "psqladminlogin"
-            }
-        },
         "postgreSqlSkuName": {
             "value": "Standard_D2s_v3"
         },
@@ -126,14 +118,6 @@
         },
         "sqlAdministratorLogin": {
             "value": "sqladminlogin"
-        },
-        "sqlAdministratorLoginPassword": {
-            "reference": {
-                "keyVault": {
-                    "id": "/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/az-rg-3tierapp-front-001/providers/Microsoft.KeyVault/vaults/az-kyv-app-test-001"
-                },
-                "secretName": "sqladminlogin"
-            }
         },
         "sqlAdministrators": {
             "value": {}
@@ -205,6 +189,27 @@
         },
         "resourceGroupNameApp": {
             "value": "az-rg-3tierapp-app-001"
+        },
+        "containerGroupName": {
+            "value": "az-acg-3tierapp-app-001"
+        },
+        "containerName": {
+            "value": "az-aci-3tierapp-app-001"
+        },
+        "image": {
+            "value": "mcr.microsoft.com/azuredocs/aci-helloworld"
+        },
+        "ports": {
+            "value": [
+                {
+                    "protocol": "Tcp",
+                    "port": "80"
+                },
+                {
+                    "protocol": "Tcp",
+                    "port": "443"
+                }
+            ]
         }
     }
 }
