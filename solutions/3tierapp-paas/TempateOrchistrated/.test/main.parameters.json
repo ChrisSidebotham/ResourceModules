@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "resourceGroupNameData": {
-            "value": "az-rg-3tierapp-data-001"
+            "value": "az-rg-<<namePrefix>>-data-001"
         },
         "tags": {
             "value": {}
@@ -18,10 +18,10 @@
             "value": "All"
         },
         "userAssignedMIname": {
-            "value": "az-mi-3tierapp-001"
+            "value": "az-mi-<<namePrefix>>-001"
         },
         "keyvaultName": {
-            "value": "az-kyv-3tierapp-001"
+            "value": "az-kyv-<<namePrefix>>-001"
         },
         "enableRbacAuthorization": {
             "value": true
@@ -33,7 +33,7 @@
             "value": "Enabled"
         },
         "logAnalyticsWorkspaceName": {
-            "value": "az-loganalytics-3tierapp-001"
+            "value": "az-loganalytics-<<namePrefix>>-001"
         },
         "publicNetworkAccessForIngestion": {
             "value": "Enabled"
@@ -42,7 +42,7 @@
             "value": "Enabled"
         },
         "cosmosdbName": {
-            "value": "az-cosmosdb-3tierapp-001"
+            "value": "az-cosmosdb-<<namePrefix>>-001"
         },
         "locations": {
             "value": [
@@ -56,7 +56,7 @@
         "sqlDatabases": {
             "value": [
                 {
-                    "name": "az-sql-x-001",
+                    "name": "az-sql-<<namePrefix>>-001",
                     "containers": [
                         {
                             "name": "container-001",
@@ -75,7 +75,7 @@
             ]
         },
         "postgreSqlServername": {
-            "value": "az-postgresql-3tierapp-001"
+            "value": "az-postgresql-<<namePrefix>>-001"
         },
         "postgreSqlAdministratorLogin": {
             "value": "psqladminlogin"
@@ -114,7 +114,7 @@
             "value": "2"
         },
         "sqlServerName": {
-            "value": "az-sql-3tierapp-001"
+            "value": "az-sql-<<namePrefix>>-001"
         },
         "sqlAdministratorLogin": {
             "value": "sqladminlogin"
@@ -164,10 +164,10 @@
             "value": {}
         },
         "resourceGroupNameFront": {
-            "value": "az-rg-3tierapp-front-001"
+            "value": "az-rg-<<namePrefix>>-front-001"
         },
         "staticSiteName": {
-            "value": "az-ss-app-001"
+            "value": "az-ss-<<namePrefix>>-001"
         },
         "allowConfigFileUpdates": {
             "value": true
@@ -188,13 +188,13 @@
             "value": true
         },
         "resourceGroupNameApp": {
-            "value": "az-rg-3tierapp-app-001"
+            "value": "az-rg-<<namePrefix>>-app-001"
         },
         "containerGroupName": {
-            "value": "az-acg-3tierapp-app-001"
+            "value": "az-acg-<<namePrefix>>-001"
         },
         "containerName": {
-            "value": "az-aci-3tierapp-app-001"
+            "value": "az-aci-<<namePrefix>>-001"
         },
         "image": {
             "value": "mcr.microsoft.com/azuredocs/aci-helloworld"
