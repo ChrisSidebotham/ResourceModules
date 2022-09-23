@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "dataFacingResourceGroupName": {
-            "value": "az-rg-<<namePrefix>>-data-001"
+            "value": "az-rg-hack-data-001"
         },
         "tags": {
             "value": {}
@@ -24,10 +24,10 @@
             "value": "All"
         },
         "userAssignedMIname": {
-            "value": "az-mi-<<namePrefix>>-001"
+            "value": "az-mi-hack-001"
         },
         "keyvaultName": {
-            "value": "azkv<<namePrefix>>"
+            "value": "azkvhack"
         },
         "enableRbacAuthorization": {
             "value": true
@@ -39,7 +39,7 @@
             "value": "Enabled"
         },
         "logAnalyticsWorkspaceName": {
-            "value": "az-law-<<namePrefix>>-001"
+            "value": "az-law-hack-001"
         },
         "publicNetworkAccessForIngestion": {
             "value": "Enabled"
@@ -48,7 +48,7 @@
             "value": "Enabled"
         },
         "cosmosdbName": {
-            "value": "az-cosmosdb-<<namePrefix>>-001"
+            "value": "az-cosmosdb-hack-001"
         },
         "locations": {
             "value": [
@@ -62,7 +62,7 @@
         "sqlDatabases": {
             "value": [
                 {
-                    "name": "az-sql-<<namePrefix>>-001",
+                    "name": "az-sql-hack-001",
                     "containers": [
                         {
                             "name": "container-001",
@@ -81,7 +81,7 @@
             ]
         },
         "postgreSqlServername": {
-            "value": "az-psql-<<namePrefix>>-001"
+            "value": "az-psql-hack-001"
         },
         "postgreSqlAdministratorLogin": {
             "value": "psqladminlogin"
@@ -120,7 +120,7 @@
             "value": "2"
         },
         "sqlServerName": {
-            "value": "az-sql-<<namePrefix>>-001"
+            "value": "az-sql-hack-001"
         },
         "sqlAdministratorLogin": {
             "value": "sqladminlogin"
@@ -170,10 +170,10 @@
             "value": {}
         },
         "frontFacingResourceGroupName": {
-            "value": "az-rg-<<namePrefix>>-front-001"
+            "value": "az-rg-hack-front-001"
         },
         "staticSiteName": {
-            "value": "az-ss-<<namePrefix>>-001"
+            "value": "az-ss-hack-001"
         },
         "allowConfigFileUpdates": {
             "value": true
@@ -194,13 +194,13 @@
             "value": true
         },
         "appFacingResourceGroupName": {
-            "value": "az-rg-<<namePrefix>>-app-001"
+            "value": "az-rg-hack-app-001"
         },
         "containerGroupName": {
-            "value": "az-acg-<<namePrefix>>-001"
+            "value": "az-acg-hack-001"
         },
         "containerName": {
-            "value": "az-aci-<<namePrefix>>-001"
+            "value": "az-aci-hack-001"
         },
         "image": {
             "value": "mcr.microsoft.com/azuredocs/aci-helloworld"
