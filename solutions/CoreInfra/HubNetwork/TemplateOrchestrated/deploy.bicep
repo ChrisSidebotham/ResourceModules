@@ -26,6 +26,12 @@ param bastion_nsg_rules array
 @description('Required. Name of the virtual network.')
 param vnet_hub string
 
+@description('Required. Name of Azure Bastion.')
+param bastionName string
+
+@description('Required. Name of Azure Firewall.')
+param azureFirewallName string
+
 /*
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string
@@ -77,12 +83,12 @@ module VirtualNetwork '../../../../modules/Microsoft.Network/virtualNetworks/dep
       '192.168.100.0/24'
     ]
     subnets: [
-      {
-        addressPrefix: '192.168.100.0/26'
-        name: 'Subnet-Hub'
-        //  networkSecurityGroupId: ''
-        //  routeTableId: ''
-      }
+      // {
+      //   addressPrefix: '192.168.100.0/26'
+      //   name: 'Subnet-Hub'
+      //   //  networkSecurityGroupId: ''
+      //   //  routeTableId: ''
+      // }
       {
         addressPrefix: '192.168.100.64/26'
         name: 'AzureBastionSubnet'
@@ -119,7 +125,6 @@ module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresse
   }
   dependsOn: [
     resourceGroups
-    VirtualNetwork
   ]
 }
 
@@ -128,11 +133,71 @@ module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.b
   name: '${uniqueString(deployment().name)}-bastionHosts'
   params: {
     location: location
-    name: 'az-bas-add-001'
-    vNetId: VirtualNetwork.outputs.resourceId //to-do. Change to loop
+    name: bastionName
+    vNetId: VirtualNetwork.outputs.resourceId
+    azureBastionSubnetPublicIpId: publicIPAddresses.outputs.resourceId
   }
   dependsOn: [
     VirtualNetwork
     publicIPAddresses
+  ]
+}
+
+module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/deploy.bicep' = {
+
+  name: '${uniqueString(deployment().name)}-AzureFirewall'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: azureFirewallName
+    location: location
+    firewallPolicyId: ''
+    vNetId: VirtualNetwork.outputs.resourceId
+    tags: tags
+    lock: lock
+    // diagnosticWorkspaceId: workspaceId
+    // diagnosticStorageAccountId: diagnosticStorageAccountId
+    // diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
+    // diagnosticEventHubName: eventHubName
+  }
+  dependsOn: [
+    VirtualNetwork
+  ]
+}
+
+module Route_Table_Hub '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+
+  name: '${uniqueString(deployment().name)}-RouteTable-Hub'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'subnet-to-AFW-udr-x-001'
+    // lock: 'CanNotDelete'
+
+    routes: [
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopIpAddress: Azure_Firewall.outputs.privateIp
+          nextHopType: 'VirtualAppliance'
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    Azure_Firewall
+  ]
+}
+
+module Hub_Subnet '../../../../modules/Microsoft.Network/virtualNetworks/subnets/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-Subnet-Hub'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'Subnet-Hub'
+    addressPrefix: '192.168.100.0/26'
+    routeTableId: Route_Table_Hub.outputs.resourceId
+    virtualNetworkName: VirtualNetwork.outputs.name
+  }
+  dependsOn: [
+    Route_Table_Hub
   ]
 }

@@ -6,6 +6,12 @@ param resourceGroupName string
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
 param tags object
 
+@description('Required. Name of the virtual network.')
+param bastionName string
+
+@description('Azure Firewall Name')
+param azureFirewallName string
+
 @description('Resource Group location')
 param location string
 
@@ -167,47 +173,119 @@ module Virtual_Network_Peering_Spoke_to_Hub '../../../../modules/Microsoft.Netwo
     Virtual_Network_Hub
   ]
 }
+module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
+  scope: resourceGroup (resourceGroupName)
+  name: '${uniqueString(deployment().name)}-VirtualMachines'
+  params: {
+    location: location
+    // Required parameters
+    adminUsername: 'azureadmin'
+    imageReference: {
+      offer: 'WindowsServer'
+      publisher: 'MicrosoftWindowsServer'
+      sku: '2019-Datacenter'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        ipConfigurations: [
+          {
+            name: 'ipconfig01'
+            subnetResourceId: Virtual_Network_Spoke.outputs.subnetResourceIds[0]
+            // subnetId: '/subscriptions/d3696aa4-85af-44e1-a83f-5c1516a22fff/resourceGroups/solutions-ne-rg/providers/Microsoft.Network/virtualNetworks/vnet-spoke/subnets/DefaultSubnet'
+          }
+        ]
+        nicSuffix: '-nic-01'
+        enableAcceleratedNetworking: false
+      }
+    ]
+    encryptionAtHost: false
+    osDisk: {
+      diskSizeGB: '128'
+      managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+      }
+    }
+    osType: 'Windows'
+    vmSize: 'Standard_B2s'
+    // Non-required parameters
+    adminPassword: 'Class123!'
+    name: 'spoke-vm-win-01'    
+  }
+  dependsOn: [
+    Virtual_Network_Spoke
+  ]
+}
 
-// module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
-//   scope: resourceGroup (resourceGroupName)
-//   name: '${uniqueString(deployment().name)}-VirtualMachines'
-//   params: {
-//     location: location
-//     // Required parameters
-//     adminUsername: 'azureadmin'
-//     imageReference: {
-//       offer: 'WindowsServer'
-//       publisher: 'MicrosoftWindowsServer'
-//       sku: '2019-Datacenter'
-//       version: 'latest'
-//     }
-//     nicConfigurations: [
-//       {
-//         ipConfigurations: [
-//           {
-//             name: 'ipconfig01'
-//             subnetId: VirtualNetworkSpoke.outputs.subnetResourceIds[0]
-//           }
-//         ]
-//         nicSuffix: '-nic-01'
-//         enableAcceleratedNetworking: false
-//       }
-//     ]
-//     encryptionAtHost: false
-//     osDisk: {
-//       diskSizeGB: '128'
-//       managedDisk: {
-//         storageAccountType: 'StandardSSD_LRS'
-//       }
-//     }
-//     osType: 'Windows'
-//     vmSize: 'Standard_B2s'
-//     // Non-required parameters
-//     adminPassword: 'Class123!'
-//     name: 'spoke-vm-win-01'
-//     enableDefaultTelemetry: false
-//   }
-//   dependsOn: [
-//     VirtualNetworkSpoke
-//   ]
-// }
+// add Azure Firewall module
+
+module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-AzureFirewall'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: azureFirewallName
+    location: location
+    firewallPolicyId: ''
+    vNetId: Virtual_Network_Hub.outputs.resourceId
+    tags: tags
+    lock: lock
+    diagnosticWorkspaceId: workspaceId
+    diagnosticStorageAccountId: diagnosticStorageAccountId
+    diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
+    diagnosticEventHubName: eventHubName
+  }
+  dependsOn: [
+    Resource_Groups
+    Virtual_Network_Hub
+  ]
+}
+
+// deploying a route table for the spoke vnet
+
+module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-RouteTable-Spoke'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'VM-to-AFW-udr-x-001'
+    lock: 'CanNotDelete'
+    routes: [
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '192.168.101/16'
+          nextHopIpAddress: Azure_Firewall.outputs.privateIp
+          nextHopType: 'VirtualAppliance'
+        }
+      }
+    ]
+  }
+}
+
+module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresses/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastion-pip'
+  params: {
+    location: location
+    name: 'az-pip-bastion-001'
+    skuName: 'Standard'
+    publicIPAllocationMethod: 'Static'
+  }
+  dependsOn: [
+    Resource_Groups
+  ]
+}
+
+module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  name: '${uniqueString(deployment().name)}-bastionHosts'
+  params: {
+    location: location
+    name: bastionName
+    vNetId: Virtual_Network_Hub.outputs.resourceId
+    azureBastionSubnetPublicIpId: publicIPAddresses.outputs.resourceId
+  }
+  dependsOn: [
+    Virtual_Network_Hub
+    publicIPAddresses
+  ]
+}
