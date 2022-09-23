@@ -81,12 +81,12 @@ module Virtual_Network_Hub '../../../../modules/Microsoft.Network/virtualNetwork
       '192.168.100.0/24'
     ]
     subnets: [
-      {
-        addressPrefix: '192.168.100.0/26'
-        name: 'Subnet-Hub'
-        //  networkSecurityGroupId: ''
-        //  routeTableId: ''
-      }
+      // {
+      //   addressPrefix: '192.168.100.0/26'
+      //   name: 'Subnet-Hub'
+      //   //  networkSecurityGroupId: ''
+      //   //  routeTableId: ''
+      // }
       {
         addressPrefix: '192.168.100.64/26'
         name: 'AzureBastionSubnet'
@@ -243,12 +243,14 @@ module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/depl
 // deploying a route table for the spoke vnet
 //TODO: Paramertise the below values
 
-module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
-  name: '${uniqueString(deployment().name)}-RouteTable-Spoke'
+module Route_Table_Hub '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+
+  name: '${uniqueString(deployment().name)}-RouteTable-Hub'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: 'VM-to-AFW-udr-x-001'
-    lock: 'CanNotDelete'
+    name: 'subnet-to-AFW-udr-x-001'
+    // lock: 'CanNotDelete'
+
     routes: [
       {
         name: 'default'
@@ -260,6 +262,23 @@ module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/depl
       }
     ]
   }
+  dependsOn: [
+    Azure_Firewall
+  ]
+}
+
+module Hub_Subnet '../../../../modules/Microsoft.Network/virtualNetworks/subnets/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-Subnet-Hub'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'Subnet-Hub'
+    addressPrefix: '192.168.100.0/26'
+    routeTableId: Route_Table_Hub.outputs.resourceId
+    virtualNetworkName: Virtual_Network_Hub.outputs.name
+  }
+  dependsOn: [
+    Route_Table_Hub    
+  ]
 }
 
 //TODO: Paramertise the below values
