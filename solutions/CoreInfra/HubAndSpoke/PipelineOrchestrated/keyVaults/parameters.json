@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Name": {
-            "value": "prfx-spk-ne-kv-01"
+            "value": "prfx-hs-ne-kv-01"
         },
         "tags": {
             "value": {
