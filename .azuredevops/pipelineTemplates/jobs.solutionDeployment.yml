@@ -170,7 +170,7 @@ jobs:
           pwsh: true
           inline: |
             # Load used functions
-            . (Join-Path '$(System.DefaultWorkingDirectory)' 'utilities' 'pipelines' 'tokensReplacement' 'Convert-TokensInFileList.ps1')
+            . (Join-Path '$(System.DefaultWorkingDirectory)' 'self' 'utilities' 'pipelines' 'tokensReplacement' 'Convert-TokensInFileList.ps1')
 
             # Get Service Principal Object ID
             $context = Get-AzContext
@@ -179,7 +179,7 @@ jobs:
             $servicePrincipalObjectId = $servicePrincipal.Id
 
             # Get target files
-            $moduleTestFilePath = Join-Path '$(System.DefaultWorkingDirectory)' '$(modulePath)' '$(moduleTestFilePath)'
+            $moduleTestFilePath = Join-Path '$(System.DefaultWorkingDirectory)' 'self' '$(modulePath)' '$(moduleTestFilePath)'
             $targetFileList = @($moduleTestFilePath)
 
             # Construct Token Function Input
