@@ -8,7 +8,7 @@ targetScope = 'subscription'
 @allowed([
   'Enable Web Static App'
 ])
-param deploymentsToPerformFrontFacingLayer string
+param deploymentsToPerformFrontFacingLayer string = 'Enable Web Static App'
 
 @description('Optional. A parameter to control which Database deployments should be executed')
 @allowed([ // Do storage account later
@@ -17,7 +17,7 @@ param deploymentsToPerformFrontFacingLayer string
   'Enable Serverless SQL'
   'Enable PostresSQL'
 ])
-param deploymentsToPerformDatabaseLayer string
+param deploymentsToPerformDatabaseLayer string = 'All'
 
 @description('Optional. A parameter to control which Application layer deployments should be executed')
 @allowed([ //Do Function App later
@@ -25,7 +25,7 @@ param deploymentsToPerformDatabaseLayer string
   'Enable Container Group'
   'Enable Container Registry'
 ])
-param deploymentsToPerformApplicationLayer string
+param deploymentsToPerformApplicationLayer string = 'All'
 
 ///////////////////////////////
 //   User-defined Deployment Properties //
