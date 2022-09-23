@@ -32,7 +32,7 @@ stages:
           jobName: resourceGroups
           displayName: 'Hub & Spoke'
           modulePath: '/solutions/CoreInfra/HubAndSpoke/TemplateOrchestrated/deploy.bicep'
-          moduleTestFilePath: 'test/parameters.json'
+          moduleTestFilePath: '.test/parameters.json'
           whatif: true
           checkoutRepositories:
             - self
@@ -45,6 +45,6 @@ stages:
           jobName: resourceGroups
           displayName: 'Hub & Spoke'
           modulePath: '/solutions/CoreInfra/HubAndSpoke/TemplateOrchestrated/deploy.bicep'
-          moduleTestFilePath: 'test/parameters.json'
+          moduleTestFilePath: '.test/parameters.json'
           checkoutRepositories:
             - self
