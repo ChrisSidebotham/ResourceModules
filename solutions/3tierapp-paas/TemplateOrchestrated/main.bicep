@@ -39,15 +39,6 @@ param deploymentsToPerformApplicationLayer string = 'All'
 @description('Optional. Specify the type of lock for all resources/resource group defined in this template.')
 param lock string = ''
 
-@allowed([
-  'All'
-  'CosmosDB'
-  'PostgreSql'
-  'SQLdatabase'
-])
-@description('Optional. To choose one of the database service')
-param choiceOfDatabase string = 'All'
-
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string = ''
 
@@ -64,8 +55,6 @@ param eventHubName string = ''
 @minValue(0)
 @maxValue(365)
 param diagnosticLogsRetentionInDays int = 365
-
-param newguid string = newGuid()
 
 //Parameters for Resource Group
 
@@ -234,7 +223,7 @@ module LogAnalytics '../../../modules/Microsoft.OperationalInsights/workspaces/d
 
 // deployment scripts
 
-module passwordGen '.test/pwdgenerator.bicep' = {
+module passwordGen 'pwdgenerator.bicep' = {
   name: 'passwordGen_deploymentScript'
   scope: resourceGroupFront
 }
@@ -337,7 +326,7 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
         roleDefinitionIdOrName: 'Key Vault Secrets User'
       }
     ]
-    diagnosticWorkspaceId: workspaceId
+    diagnosticWorkspaceId: !empty(workspaceId) ? workspaceId : LogAnalytics.outputs.resourceId
     diagnosticStorageAccountId: diagnosticStorageAccountId
     diagnosticEventHubName: eventHubName
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
@@ -345,6 +334,7 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
   }
   dependsOn: [
     userAssignedManagedIdentity
+    LogAnalytics
   ]
 }
 
@@ -352,7 +342,7 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
 
 // Static Site Deployment
 
-module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
+module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = if (deploymentsToPerformFrontFacingLayer == 'Enable Web Static App') {
   name: '${uniqueString(deployment().name)}-StaticSites'
   scope: resourceGroupFront
   params: {
@@ -399,7 +389,7 @@ param capabilitiesToAdd array = [
   'EnableServerless'
 ]
 
-module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.bicep' = if (choiceOfDatabase == 'CosmosDB' || choiceOfDatabase == 'All') {
+module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.bicep' = if (deploymentsToPerformDatabaseLayer == 'Enable Cosmos DB' || deploymentsToPerformDatabaseLayer == 'All') {
   name: 'Deployment_CosmosDB'
   scope: resourceGroupData
   params: {
@@ -419,6 +409,9 @@ module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.b
       '${userAssignedManagedIdentity.outputs.resourceId}': {}
     }
   }
+  dependsOn: [
+    LogAnalytics
+  ]
 }
 
 // PostgreSql
@@ -486,7 +479,7 @@ param postgreSqlConfigurations array = []
 @description('Optional. Availability zone information of the server. Default will have no preference set.')
 param postgreSqlAvailabilityZone string = ''
 
-module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/deploy.bicep' = if (choiceOfDatabase == 'PostgreSql' || choiceOfDatabase == 'All') {
+module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/deploy.bicep' = if (deploymentsToPerformDatabaseLayer == 'Enable PostresSQL' || deploymentsToPerformDatabaseLayer == 'All') {
   name: 'PostgreSql_deployment'
   scope: resourceGroupData
   params: {
@@ -504,7 +497,7 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
     firewallRules: postgreSqlFirewallRules
     configurations: postgreSqlConfigurations
     availabilityZone: postgreSqlAvailabilityZone
-    diagnosticWorkspaceId: workspaceId
+    diagnosticWorkspaceId: !empty(workspaceId) ? workspaceId : LogAnalytics.outputs.resourceId
     diagnosticStorageAccountId: diagnosticStorageAccountId
     diagnosticEventHubName: eventHubName
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
@@ -512,6 +505,7 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
   }
   dependsOn: [
     keyvault
+    LogAnalytics
   ]
 }
 
@@ -561,7 +555,7 @@ param minimalTlsVersion string = '1.2'
 @description('Optional. Array of role assignment objects that contain the \'roleDefinitionIdOrName\' and \'principalId\' to define RBAC role assignments on this resource. In the roleDefinitionIdOrName attribute, you can provide either the display name of the role definition, or its fully qualified ID in the following format: \'/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11\'.')
 param sqlRoleAssignments array = []
 
-module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choiceOfDatabase == 'SQLdatabase' || choiceOfDatabase == 'All') {
+module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (deploymentsToPerformDatabaseLayer == 'Enable Serverless SQL' || deploymentsToPerformDatabaseLayer == 'All') {
   name: 'SQL_deployment'
   scope: resourceGroupData
   params: {
@@ -619,7 +613,7 @@ param containerPorts array = [
     protocol: 'Tcp'
   }
 ]
-module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
+module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = if (deploymentsToPerformApplicationLayer == 'Enable Container Group') {
   name: '${uniqueString(deployment().name)}-ContainerGroups'
   scope: resourceGroupApp
   params: {

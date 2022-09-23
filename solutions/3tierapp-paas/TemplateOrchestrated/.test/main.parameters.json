@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "resourceGroupNameData": {
+        "dataFacingResourceGroupName": {
             "value": "az-rg-<<namePrefix>>-data-001"
         },
         "tags": {
@@ -14,7 +14,13 @@
         "lock": {
             "value": "CanNotDelete"
         },
-        "choiceOfDatabase": {
+        "deploymentsToPerformFrontFacingLayer": {
+            "value": "Enable Web Static App"
+        },
+        "deploymentsToPerformDatabaseLayer": {
+            "value": "All"
+        },
+        "deploymentsToPerformApplicationLayer": {
             "value": "All"
         },
         "userAssignedMIname": {
@@ -163,7 +169,7 @@
         "vulnerabilityAssessmentsObj": {
             "value": {}
         },
-        "resourceGroupNameFront": {
+        "frontFacingResourceGroupName": {
             "value": "az-rg-<<namePrefix>>-front-001"
         },
         "staticSiteName": {
@@ -187,7 +193,7 @@
         "systemAssignedIdentity": {
             "value": true
         },
-        "resourceGroupNameApp": {
+        "appFacingResourceGroupName": {
             "value": "az-rg-<<namePrefix>>-app-001"
         },
         "containerGroupName": {
@@ -199,7 +205,7 @@
         "image": {
             "value": "mcr.microsoft.com/azuredocs/aci-helloworld"
         },
-        "ports": {
+        "containerPorts": {
             "value": [
                 {
                     "protocol": "Tcp",
