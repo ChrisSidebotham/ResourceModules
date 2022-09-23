@@ -30,9 +30,9 @@ stages:
       - template: /.azuredevops/pipelineTemplates/jobs.solutionDeployment.yml
         parameters:
           jobName: resourceGroups
-          displayName: 'Resource Group'
-          modulePath: '/modules/Microsoft.Resources/resourceGroups/deploy.bicep'
-          moduleTestFilePath: 'rg.parameters.json'
+          displayName: 'Hub & Spoke'
+          modulePath: '/solutions/CoreInfra/HubAndSpoke/TemplateOrchestrated/deploy.bicep'
+          moduleTestFilePath: 'test/parameters.json'
           whatif: true
           checkoutRepositories:
             - self
@@ -43,8 +43,8 @@ stages:
       - template: /.azuredevops/pipelineTemplates/jobs.solutionDeployment.yml
         parameters:
           jobName: resourceGroups
-          displayName: 'Resource Group'
-          modulePath: '/modules/Microsoft.Resources/resourceGroups/deploy.bicep'
-          moduleTestFilePath: 'rg.parameters.json'
+          displayName: 'Hub & Spoke'
+          modulePath: '/solutions/CoreInfra/HubAndSpoke/TemplateOrchestrated/deploy.bicep'
+          moduleTestFilePath: 'test/parameters.json'
           checkoutRepositories:
             - self
