@@ -253,7 +253,7 @@ module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/depl
       {
         name: 'default'
         properties: {
-          addressPrefix: '192.168.101/16'
+          addressPrefix: '0.0.0.0/0'
           nextHopIpAddress: Azure_Firewall.outputs.privateIp
           nextHopType: 'VirtualAppliance'
         }
