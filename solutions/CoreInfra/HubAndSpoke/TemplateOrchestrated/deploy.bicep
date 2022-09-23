@@ -45,7 +45,7 @@ param workspaceId string = ''
 param eventHubAuthorizationRuleId string = ''
 
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
-param eventHubName string
+param eventHubName string = ''
 module Resource_Groups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-rg'
   params: {
