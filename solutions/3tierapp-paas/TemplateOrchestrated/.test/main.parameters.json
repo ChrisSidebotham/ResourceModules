@@ -2,8 +2,8 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "resourceGroupNameData": {
-            "value": "az-rg-3tierapp-data-001"
+        "dataFacingResourceGroupName": {
+            "value": "az-rg-hack-data-001"
         },
         "tags": {
             "value": {}
@@ -14,14 +14,20 @@
         "lock": {
             "value": "CanNotDelete"
         },
-        "choiceOfDatabase": {
+        "deploymentsToPerformFrontFacingLayer": {
+            "value": "Enable Web Static App"
+        },
+        "deploymentsToPerformDatabaseLayer": {
+            "value": "All"
+        },
+        "deploymentsToPerformApplicationLayer": {
             "value": "All"
         },
         "userAssignedMIname": {
-            "value": "az-mi-3tierapp-001"
+            "value": "az-mi-hack-001"
         },
         "keyvaultName": {
-            "value": "az-kyv-app-test-001"
+            "value": "azkvhack"
         },
         "enableRbacAuthorization": {
             "value": true
@@ -33,7 +39,7 @@
             "value": "Enabled"
         },
         "logAnalyticsWorkspaceName": {
-            "value": "az-loganalytics-3tierapp-001"
+            "value": "az-law-hack-001"
         },
         "publicNetworkAccessForIngestion": {
             "value": "Enabled"
@@ -42,7 +48,7 @@
             "value": "Enabled"
         },
         "cosmosdbName": {
-            "value": "az-cosmosdb-3tierapp-001"
+            "value": "az-cosmosdb-hack-001"
         },
         "locations": {
             "value": [
@@ -56,7 +62,7 @@
         "sqlDatabases": {
             "value": [
                 {
-                    "name": "az-sql-x-001",
+                    "name": "az-sql-hack-001",
                     "containers": [
                         {
                             "name": "container-001",
@@ -75,18 +81,10 @@
             ]
         },
         "postgreSqlServername": {
-            "value": "az-postgresql-3tierapp-001"
+            "value": "az-psql-hack-001"
         },
         "postgreSqlAdministratorLogin": {
             "value": "psqladminlogin"
-        },
-        "postgreSqlAdministratorLoginPassword": {
-            "reference": {
-                "keyVault": {
-                    "id": "/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/az-rg-3tierapp-front-001/providers/Microsoft.KeyVault/vaults/az-kyv-app-test-001"
-                },
-                "secretName": "psqladminlogin"
-            }
         },
         "postgreSqlSkuName": {
             "value": "Standard_D2s_v3"
@@ -122,18 +120,10 @@
             "value": "2"
         },
         "sqlServerName": {
-            "value": "az-sql-3tierapp-001"
+            "value": "az-sql-hack-001"
         },
         "sqlAdministratorLogin": {
             "value": "sqladminlogin"
-        },
-        "sqlAdministratorLoginPassword": {
-            "reference": {
-                "keyVault": {
-                    "id": "/subscriptions/75b1e0ee-d030-43d8-a4bc-35a810096e46/resourceGroups/az-rg-3tierapp-front-001/providers/Microsoft.KeyVault/vaults/az-kyv-app-test-001"
-                },
-                "secretName": "sqladminlogin"
-            }
         },
         "sqlAdministrators": {
             "value": {}
@@ -179,11 +169,11 @@
         "vulnerabilityAssessmentsObj": {
             "value": {}
         },
-        "resourceGroupNameFront": {
-            "value": "az-rg-3tierapp-front-001"
+        "frontFacingResourceGroupName": {
+            "value": "az-rg-hack-front-001"
         },
         "staticSiteName": {
-            "value": "az-ss-app-001"
+            "value": "az-ss-hack-001"
         },
         "allowConfigFileUpdates": {
             "value": true
@@ -203,8 +193,29 @@
         "systemAssignedIdentity": {
             "value": true
         },
-        "resourceGroupNameApp": {
-            "value": "az-rg-3tierapp-app-001"
+        "appFacingResourceGroupName": {
+            "value": "az-rg-hack-app-001"
+        },
+        "containerGroupName": {
+            "value": "az-acg-hack-001"
+        },
+        "containerName": {
+            "value": "az-aci-hack-001"
+        },
+        "image": {
+            "value": "mcr.microsoft.com/azuredocs/aci-helloworld"
+        },
+        "containerPorts": {
+            "value": [
+                {
+                    "protocol": "Tcp",
+                    "port": "80"
+                },
+                {
+                    "protocol": "Tcp",
+                    "port": "443"
+                }
+            ]
         }
     }
 }

@@ -8,7 +8,7 @@ targetScope = 'subscription'
 @allowed([
   'Enable Web Static App'
 ])
-param deploymentsToPerformFrontFacingLayer string
+param deploymentsToPerformFrontFacingLayer string = 'Enable Web Static App'
 
 @description('Optional. A parameter to control which Database deployments should be executed')
 @allowed([ // Do storage account later
@@ -17,7 +17,7 @@ param deploymentsToPerformFrontFacingLayer string
   'Enable Serverless SQL'
   'Enable PostresSQL'
 ])
-param deploymentsToPerformDatabaseLayer string
+param deploymentsToPerformDatabaseLayer string = 'All'
 
 @description('Optional. A parameter to control which Application layer deployments should be executed')
 @allowed([ //Do Function App later
@@ -25,7 +25,7 @@ param deploymentsToPerformDatabaseLayer string
   'Enable Container Group'
   'Enable Container Registry'
 ])
-param deploymentsToPerformApplicationLayer string
+param deploymentsToPerformApplicationLayer string = 'All'
 
 ///////////////////////////////
 //   User-defined Deployment Properties //
@@ -38,15 +38,6 @@ param deploymentsToPerformApplicationLayer string
 ])
 @description('Optional. Specify the type of lock for all resources/resource group defined in this template.')
 param lock string = ''
-
-@allowed([
-  'All'
-  'CosmosDB'
-  'PostgreSql'
-  'SQLdatabase'
-])
-@description('Optional. To choose one of the database service')
-param choiceOfDatabase string = 'All'
 
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string = ''
@@ -64,8 +55,6 @@ param eventHubName string = ''
 @minValue(0)
 @maxValue(365)
 param diagnosticLogsRetentionInDays int = 365
-
-param newguid string = newGuid()
 
 //Parameters for Resource Group
 
@@ -232,6 +221,13 @@ module LogAnalytics '../../../modules/Microsoft.OperationalInsights/workspaces/d
   }
 }
 
+// deployment scripts
+
+module passwordGen 'pwdgenerator.bicep' = {
+  name: 'passwordGen_deploymentScript'
+  scope: resourceGroupFront
+}
+
 // key vault
 
 @description('Required. Name of the Key Vault. Must be globally unique.')
@@ -311,14 +307,14 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
           attributesNbf: 10000
           contentType: 'postgresql admin credentials'
           name: 'psqladminlogin'
-          value: newguid
+          value: passwordGen.outputs.passwordText_psql
         }
         {
           attributesExp: 1702648632
           attributesNbf: 10000
           contentType: 'sql server admin credentials'
           name: 'sqladminlogin'
-          value: newguid
+          value: passwordGen.outputs.passwordText_sql
         }
       ]
     }
@@ -330,7 +326,7 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
         roleDefinitionIdOrName: 'Key Vault Secrets User'
       }
     ]
-    diagnosticWorkspaceId: workspaceId
+    diagnosticWorkspaceId: !empty(workspaceId) ? workspaceId : LogAnalytics.outputs.resourceId
     diagnosticStorageAccountId: diagnosticStorageAccountId
     diagnosticEventHubName: eventHubName
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
@@ -338,6 +334,7 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
   }
   dependsOn: [
     userAssignedManagedIdentity
+    LogAnalytics
   ]
 }
 
@@ -345,7 +342,18 @@ module keyvault '../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' = {
 
 // Static Site Deployment
 
-module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
+@description('Optional. Location for static web app.')
+@allowed([
+  'westus2'
+  'centralus'
+  'eastus2'
+  'westeurope'
+  'eastasia'
+  'eastasiastage'
+])
+param staticAppLocation string = 'eastus2'
+
+module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = if (deploymentsToPerformFrontFacingLayer == 'Enable Web Static App') {
   name: '${uniqueString(deployment().name)}-StaticSites'
   scope: resourceGroupFront
   params: {
@@ -363,6 +371,7 @@ module staticSites '../../../modules/Microsoft.Web/staticSites/deploy.bicep' = {
     userAssignedIdentities: {
       '${userAssignedManagedIdentity.outputs.resourceId}': {}
     }
+    location: staticAppLocation
   }
 }
 
@@ -392,7 +401,7 @@ param capabilitiesToAdd array = [
   'EnableServerless'
 ]
 
-module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.bicep' = if (choiceOfDatabase == 'CosmosDB' || choiceOfDatabase == 'All') {
+module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.bicep' = if (deploymentsToPerformDatabaseLayer == 'Enable Cosmos DB' || deploymentsToPerformDatabaseLayer == 'All') {
   name: 'Deployment_CosmosDB'
   scope: resourceGroupData
   params: {
@@ -412,6 +421,9 @@ module Cosmosdb '../../../modules/Microsoft.DocumentDB/databaseAccounts/deploy.b
       '${userAssignedManagedIdentity.outputs.resourceId}': {}
     }
   }
+  dependsOn: [
+    LogAnalytics
+  ]
 }
 
 // PostgreSql
@@ -421,10 +433,6 @@ param postgreSqlServername string = 'az-postgresql-001'
 
 @description('Required. The administrator login name of a server. Can only be specified when the PostgreSQL server is being created.')
 param postgreSqlAdministratorLogin string = 'sqladminlogin'
-
-@description('Required. The administrator login password.')
-@secure()
-param postgreSqlAdministratorLoginPassword string = newGuid()
 
 @description('Required. The name of the sku, typically, tier + family + cores, e.g. Standard_D4s_v3.')
 param postgreSqlSkuName string = 'Standard_D2s_v3'
@@ -483,14 +491,14 @@ param postgreSqlConfigurations array = []
 @description('Optional. Availability zone information of the server. Default will have no preference set.')
 param postgreSqlAvailabilityZone string = ''
 
-module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/deploy.bicep' = if (choiceOfDatabase == 'PostgreSql' || choiceOfDatabase == 'All') {
+module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/deploy.bicep' = if (deploymentsToPerformDatabaseLayer == 'Enable PostresSQL' || deploymentsToPerformDatabaseLayer == 'All') {
   name: 'PostgreSql_deployment'
   scope: resourceGroupData
   params: {
     name: postgreSqlServername
     location: location
     administratorLogin: postgreSqlAdministratorLogin
-    administratorLoginPassword: postgreSqlAdministratorLoginPassword
+    administratorLoginPassword: passwordGen.outputs.passwordText_psql
     skuName: postgreSqlSkuName
     tier: postgreSqlTier
     geoRedundantBackup: postgreSqlGeoRedundantBackup
@@ -501,7 +509,7 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
     firewallRules: postgreSqlFirewallRules
     configurations: postgreSqlConfigurations
     availabilityZone: postgreSqlAvailabilityZone
-    diagnosticWorkspaceId: workspaceId
+    diagnosticWorkspaceId: !empty(workspaceId) ? workspaceId : LogAnalytics.outputs.resourceId
     diagnosticStorageAccountId: diagnosticStorageAccountId
     diagnosticEventHubName: eventHubName
     diagnosticEventHubAuthorizationRuleId: eventHubAuthorizationRuleId
@@ -509,6 +517,7 @@ module PostgreSql '../../../modules/Microsoft.DBforPostgreSQL/flexibleServers/de
   }
   dependsOn: [
     keyvault
+    LogAnalytics
   ]
 }
 
@@ -519,10 +528,6 @@ param sqlServerName string = 'az-sqlsrv-01'
 
 @description('Conditional. The administrator username for the server. Required if no `administrators` object for AAD authentication is provided.')
 param sqlAdministratorLogin string = 'sqladminlogin'
-
-@description('Conditional. The administrator login password. Required if no `administrators` object for AAD authentication is provided.')
-@secure()
-param sqlAdministratorLoginPassword string = newGuid()
 
 @description('Conditional. The Azure Active Directory (AAD) administrator authentication. Required if no `administratorLogin` & `administratorLoginPassword` is provided.')
 param sqlAdministrators object = {}
@@ -562,14 +567,14 @@ param minimalTlsVersion string = '1.2'
 @description('Optional. Array of role assignment objects that contain the \'roleDefinitionIdOrName\' and \'principalId\' to define RBAC role assignments on this resource. In the roleDefinitionIdOrName attribute, you can provide either the display name of the role definition, or its fully qualified ID in the following format: \'/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11\'.')
 param sqlRoleAssignments array = []
 
-module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choiceOfDatabase == 'SQLdatabase' || choiceOfDatabase == 'All') {
+module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (deploymentsToPerformDatabaseLayer == 'Enable Serverless SQL' || deploymentsToPerformDatabaseLayer == 'All') {
   name: 'SQL_deployment'
   scope: resourceGroupData
   params: {
     name: sqlServerName
     location: location
     administratorLogin: sqlAdministratorLogin
-    administratorLoginPassword: sqlAdministratorLoginPassword
+    administratorLoginPassword: passwordGen.outputs.passwordText_sql
     administrators: sqlAdministrators
     publicNetworkAccess: sqlPublicNetworkAccess
     privateEndpoints: sqlPrivateEndpoints
@@ -594,29 +599,48 @@ module SQL_db '../../../modules/Microsoft.Sql/servers/deploy.bicep' = if (choice
 
 // Application Deployment
 
-// module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = {
-//   name: '${uniqueString(deployment().name)}-ContainerGroups'
-//   scope: resourceGroupApp
-//   params: {
-//     // Required parameters
-//     containername: '<<namePrefix>>-az-aci-x-001'
-//     image: 'mcr.microsoft.com/azuredocs/aci-helloworld'
-//     name: '<<namePrefix>>-az-acg-x-001'
-//     // Non-required parameters
-//     lock: 'CanNotDelete'
-//     ports: [
-//       {
-//         port: '80'
-//         protocol: 'Tcp'
-//       }
-//       {
-//         port: '443'
-//         protocol: 'Tcp'
-//       }
-//     ]
-//     systemAssignedIdentity: true
-//     userAssignedIdentities: {
-//       '/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-<<namePrefix>>-az-msi-x-001': {}
-//     }
-//   }
-// }
+@description('Required. Name for the container group.')
+param containerGroupName string = 'az-acg-x-001'
+
+@description('Required. Name for the container.')
+param containerName string = 'az-aci-x-001'
+
+@description('Required. Name of the image.')
+param image string = 'mcr.microsoft.com/azuredocs/aci-helloworld'
+
+@description('Optional. The operating system type required by the containers in the container group. - Windows or Linux.')
+param osType string = 'Linux'
+
+@description('Optional. Specifies if the IP is exposed to the public internet or private VNET. - Public or Private.')
+param ipAddressType string = 'Public'
+
+@description('Optional. Port to open on the container and the public IP address.')
+param containerPorts array = [
+  {
+    port: '80'
+    protocol: 'Tcp'
+  }
+  {
+    port: '443'
+    protocol: 'Tcp'
+  }
+]
+module containerGroups '../../../modules/Microsoft.ContainerInstance/containerGroups/deploy.bicep' = if (deploymentsToPerformApplicationLayer == 'Enable Container Group') {
+  name: '${uniqueString(deployment().name)}-ContainerGroups'
+  scope: resourceGroupApp
+  params: {
+    // Required parameters
+    containername: containerName
+    image: image
+    name: containerGroupName
+    // Non-required parameters
+    lock: lock
+    ports: containerPorts
+    ipAddressType: ipAddressType
+    osType: osType
+    systemAssignedIdentity: true
+    userAssignedIdentities: {
+      '${userAssignedManagedIdentity.outputs.resourceId}': {}
+    }
+  }
+}
