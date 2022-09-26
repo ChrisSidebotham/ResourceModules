@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "resourceGroupName": {
-            "value": "solutions-ne-rg"
+            "value": "solutions-ne-rg-spoke"
         },
         "location": {
             "value": "westeurope"

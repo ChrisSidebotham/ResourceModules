@@ -1,6 +1,6 @@
 variables:
-  resourceGroupName: 'solutions-ne-rg'
-  environmentPath: 'solutions/CoreInfra/HubNetwork/TemplateOrchestrated'
+  resourceGroupName: ''
+  environmentPath: 'solutions/CoreInfra/Spoke/TemplateOrchestrated'
   location: 'northeurope'
   vmImage: 'ubuntu-latest'
   poolName: ''

@@ -1,5 +1,5 @@
 variables:
-  resourceGroupName: 'solutions-ne-rg'
+  resourceGroupName: ''
   environmentPath: 'solutions/CoreInfra/HubNetwork/TemplateOrchestrated'
   location: 'northeurope'
   vmImage: 'ubuntu-latest'

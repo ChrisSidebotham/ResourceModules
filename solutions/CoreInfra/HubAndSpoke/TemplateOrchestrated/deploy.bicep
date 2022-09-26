@@ -4,16 +4,16 @@ targetScope = 'subscription'
 param resourceGroupName string
 
 @description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
-param tags object
+param tags object = {}
 
-@description('Required. Name of the virtual network.')
-param bastionName string
+@description('Optional. Name of the Azure Bastion Service.')
+param bastionName string = ''
 
-@description('Azure Firewall Name')
+@description('Optional. Azure Firewall Name')
 param azureFirewallName string
 
-@description('Resource Group location')
-param location string
+@description('Optional. Resource Group location')
+param location string = deployment().location
 
 @allowed([
   ''
@@ -21,31 +21,31 @@ param location string
   'ReadOnly'
 ])
 @description('Optional. Specify the type of lock for all resources/resource group defined in this template.')
-param lock string
+param lock string = ''
 
-@description('Required. Name of the network security group for the Azure Bastion Host subnet.')
-param nsgBastionSubnetName string
+@description('Optional. Name of the network security group for the Azure Bastion Host subnet.')
+param nsgBastionSubnetName string = ''
 
-@description('Required. NSG security rules for the Azure Bastion Host subnet.')
-param bastion_nsg_rules array
+@description('Optional. NSG security rules for the Azure Bastion Host subnet.')
+param bastion_nsg_rules array = []
 
-@description('Required. Name of the virtual network.')
-param vnet_hub string
+@description('Optional. Name of the hub virtual network.')
+param vnet_hub string = 'vnet-hub'
 
-@description('Required. Name of the virtual network.')
+@description('Optional. Name of the spoke virtual network.')
 param vnetName2 string = 'vnet-spoke'
 
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
-param diagnosticStorageAccountId string
+param diagnosticStorageAccountId string = ''
 
 @description('Optional. Resource ID of the Log Analytics workspace to be used for diagnostic logs.')
-param workspaceId string
+param workspaceId string = ''
 
 @description('Optional. Authorization ID of the Event Hub Namespace to be used for diagnostic logs.')
-param eventHubAuthorizationRuleId string
+param eventHubAuthorizationRuleId string = ''
 
 @description('Optional. Name of the Event Hub to be used for diagnostic logs.')
-param eventHubName string
+param eventHubName string = ''
 module Resource_Groups '../../../../modules/Microsoft.Resources/resourceGroups/deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-rg'
   params: {
@@ -59,7 +59,7 @@ module NSG_bastion_subnet '../../../../modules/Microsoft.Network/networkSecurity
   name: '${uniqueString(deployment().name)}-bastion-subnet'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: nsgBastionSubnetName
+    name: !empty(nsgBastionSubnetName) ? nsgBastionSubnetName : 'nsg-bas-${location}'
     securityRules: bastion_nsg_rules
     tags: tags
     lock: lock
@@ -81,12 +81,12 @@ module Virtual_Network_Hub '../../../../modules/Microsoft.Network/virtualNetwork
       '192.168.100.0/24'
     ]
     subnets: [
-      {
-        addressPrefix: '192.168.100.0/26'
-        name: 'Subnet-Hub'
-        //  networkSecurityGroupId: ''
-        //  routeTableId: ''
-      }
+      // {
+      //   addressPrefix: '192.168.100.0/26'
+      //   name: 'Subnet-Hub'
+      //   //  networkSecurityGroupId: ''
+      //   //  routeTableId: ''
+      // }
       {
         addressPrefix: '192.168.100.64/26'
         name: 'AzureBastionSubnet'
@@ -174,7 +174,7 @@ module Virtual_Network_Peering_Spoke_to_Hub '../../../../modules/Microsoft.Netwo
   ]
 }
 module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/deploy.bicep' = {
-  scope: resourceGroup (resourceGroupName)
+  scope: resourceGroup(resourceGroupName)
   name: '${uniqueString(deployment().name)}-VirtualMachines'
   params: {
     location: location
@@ -210,7 +210,7 @@ module virtualMachines '../../../../modules/Microsoft.Compute/virtualMachines/de
     vmSize: 'Standard_B2s'
     // Non-required parameters
     adminPassword: 'Class123!'
-    name: 'spoke-vm-win-01'    
+    name: 'spoke-vm-win-01'
   }
   dependsOn: [
     Virtual_Network_Spoke
@@ -223,7 +223,7 @@ module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/depl
   name: '${uniqueString(deployment().name)}-AzureFirewall'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: azureFirewallName
+    name: !empty(azureFirewallName) ? azureFirewallName : 'azfw-${Virtual_Network_Hub.outputs.name}'
     location: location
     firewallPolicyId: ''
     vNetId: Virtual_Network_Hub.outputs.resourceId
@@ -241,26 +241,47 @@ module Azure_Firewall '../../../../modules/Microsoft.Network/azureFirewalls/depl
 }
 
 // deploying a route table for the spoke vnet
+//TODO: Paramertise the below values
 
-module Route_Table_Spoke '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
-  name: '${uniqueString(deployment().name)}-RouteTable-Spoke'
+module Route_Table_Hub '../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+
+  name: '${uniqueString(deployment().name)}-RouteTable-Hub'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: 'VM-to-AFW-udr-x-001'
-    lock: 'CanNotDelete'
+    name: 'subnet-to-AFW-udr-x-001'
+    // lock: 'CanNotDelete'
+
     routes: [
       {
         name: 'default'
         properties: {
-          addressPrefix: '192.168.101/16'
+          addressPrefix: '0.0.0.0/0'
           nextHopIpAddress: Azure_Firewall.outputs.privateIp
           nextHopType: 'VirtualAppliance'
         }
       }
     ]
   }
+  dependsOn: [
+    Azure_Firewall
+  ]
 }
 
+module Hub_Subnet '../../../../modules/Microsoft.Network/virtualNetworks/subnets/deploy.bicep' = {
+  name: '${uniqueString(deployment().name)}-Subnet-Hub'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'Subnet-Hub'
+    addressPrefix: '192.168.100.0/26'
+    routeTableId: Route_Table_Hub.outputs.resourceId
+    virtualNetworkName: Virtual_Network_Hub.outputs.name
+  }
+  dependsOn: [
+    Route_Table_Hub    
+  ]
+}
+
+//TODO: Paramertise the below values
 module publicIPAddresses '../../../../modules/Microsoft.Network/publicIPAddresses/deploy.bicep' = {
   scope: resourceGroup(resourceGroupName)
   name: '${uniqueString(deployment().name)}-bastion-pip'
@@ -280,7 +301,7 @@ module bastionHosts '../../../../modules/Microsoft.Network/bastionHosts/deploy.b
   name: '${uniqueString(deployment().name)}-bastionHosts'
   params: {
     location: location
-    name: bastionName
+    name: !empty(bastionName) ? bastionName : 'bas-${Virtual_Network_Hub.outputs.name}'
     vNetId: Virtual_Network_Hub.outputs.resourceId
     azureBastionSubnetPublicIpId: publicIPAddresses.outputs.resourceId
   }
