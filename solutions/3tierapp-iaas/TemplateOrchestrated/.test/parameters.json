@@ -2,20 +2,38 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "deploymentTier": {
-            "value": "web"
+        "vnetAddressPrefix": {
+            "value": "192.168.0.0/16"
         },
-        "vmLocalUserName": {
+        "vnetWebSubnetAddressPrefix": {
+            "value": "192.168.1.0/24"
+        },
+        "vnetAppSubnetAddressPrefix": {
+            "value": "192.168.2.0/24"
+        },
+        "vnetDbSubnetAddressPrefix": {
+            "value": "192.168.3.0/24"
+        },
+        "vnetBastionSubnetAddressPrefix": {
+            "value": "192.168.254.0/27"
+        },
+        "webVmLocalUserName": {
             "value": "webtieradmin"
         },
-        "vmLocalUserPassword": {
-            "value": "<<localUserPassword>>"
+        "webVmLocalUserPassword": {
+            "value": "<<webVmLocalUserPassword>>"
         },
-        "subnetId": {
-            "value": "/subscriptions/<<SubscriptionName>>/resourceGroups/<<ResourceGroupName>>/providers/Microsoft.Network/virtualNetworks/<<VirtualNetworkName>>/Subnets/<<WebTierSubnetName>>"
+        "appVmLocalUserName": {
+            "value": "apptieradmin"
         },
-        "asgId": {
-            "value": "/subscriptions/<<SubscriptionID>>/resourceGroups/<<ResourceGroupName>>/providers/Microsoft.Network/applicationSecurityGroups/<<ApplicationSecurityGroupName>>"
+        "appVmLocalUserPassword": {
+            "value": "<<appVmLocalUserPassword>>"
+        },
+        "dbVmLocalUserName": {
+            "value": "dbtieradmin"
+        },
+        "dbVmLocalUserPassword": {
+            "value": "<<appVmLocalUserPassword>>"
         }
     }
 }

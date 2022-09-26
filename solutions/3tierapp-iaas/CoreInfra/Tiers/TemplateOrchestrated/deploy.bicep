@@ -75,6 +75,9 @@ param vmLocalUserPassword string
 @description('Optional. Name of keyvault that will contain credentials.')
 param keyvaultName string = ''
 
+@description('Optional. Name of load balancer to deploy.')
+param loadBalancerName string = ''
+
 @description('Optional. Resource ID of the storage account to be used for diagnostic logs.')
 param diagnosticStorageAccountId string = ''
 
@@ -99,7 +102,8 @@ var varDeploymentTierLowerCase = toLower(deploymentTier)
 var varDeploymentPrefixLowerCase = toLower(varDeploymentPrefix)
 var varDeploymentPrefix = !empty(deploymentPrefix) ? deploymentPrefix : '3tier'
 var varResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : 'rg-${varDeploymentPrefixLowerCase}-${varLocationLowercase}-${varDeploymentTierLowerCase}'
-var varKeyvaultName = !empty(keyvaultName) ? keyvaultName : 'kv-${varDeploymentPrefixLowerCase}-${varDeploymentTierLowerCase}-${varLocationLowercase}-${uniqueStringSixChar}' // max length limit 24 characters
+var varKeyvaultName = !empty(keyvaultName) ? keyvaultName : 'kv-${varDeploymentTierLowerCase}-${varLocationLowercase}-${uniqueStringSixChar}' // max length limit 24 characters
+var varLoadBalancerName = !empty(loadBalancerName) ? loadBalancerName : 'lb-${varDeploymentPrefixLowerCase}-${varDeploymentTierLowerCase}-${varLocationLowercase}-001'
 var varAllAvailabilityZones = pickZones('Microsoft.Compute', 'virtualMachines', location, 3)
 var varVmNamePrefix = !empty(vmNamePrefix) ? vmNamePrefix : 'vm-${varDeploymentTierLowerCase}'
 var varAvailabilitySetName = !empty(availabilitySetName) ? availabilitySetName : 'avail-${varDeploymentPrefixLowerCase}-${varDeploymentTierLowerCase}-${varLocationLowercase}-001'
@@ -148,12 +152,12 @@ module keyVault '../../../../../modules/Microsoft.KeyVault/vaults/deploy.bicep' 
     enableRbacAuthorization: false
     enablePurgeProtection: true
     softDeleteRetentionInDays: 7
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Deny'
-      virtualNetworkRules: []
-      ipRules: []
-    }
+    //networkAcls: {
+    //  bypass: 'AzureServices'
+    //  defaultAction: 'Deny'
+    //  virtualNetworkRules: []
+    //  ipRules: []
+    //}
     secrets: {
       secureList: [
         {
@@ -204,8 +208,8 @@ module virtualMachines '../../../../../modules/Microsoft.Compute/virtualMachines
     //availabilityZone: useAvailabilityZones ? take(skip(varAllAvailabilityZones, i % length(varAllAvailabilityZones)), 1) : 0
     availabilitySetResourceId: !useAvailabilityZones ? availabilitySet.outputs.resourceId : ''
     osType: 'Windows'
-    licenseType: 'Windows_Client'
     vmSize: vmSize
+    encryptionAtHost: false
     imageReference: varMarketPlaceGalleryImages[marketPlaceGalleryImage]
     osDisk: {
       createOption: 'fromImage'
@@ -216,17 +220,17 @@ module virtualMachines '../../../../../modules/Microsoft.Compute/virtualMachines
       }
     }
     adminUsername: vmLocalUserName
-    adminPassword: getkeyVault.getSecret('avdVmLocalUserPassword')
+    adminPassword: getkeyVault.getSecret('VmLocalUserPassword')
     nicConfigurations: [
       {
-        nicSuffix: 'nic-001-'
+        nicSuffix: '-nic-001'
         deleteOption: 'Delete'
         asgId: asgId
         enableAcceleratedNetworking: false
         ipConfigurations: [
           {
             name: 'ipconfig01'
-            subnetId: subnetId
+            subnetResourceId: subnetId
           }
         ]
       }
@@ -239,6 +243,39 @@ module virtualMachines '../../../../../modules/Microsoft.Compute/virtualMachines
     diagnosticEventHubName: !empty(eventHubName) ? eventHubName : ''
   }
   dependsOn: []
+}]
+
+module loadBalancer '../../../../../modules/Microsoft.Network/loadBalancers/deploy.bicep' = [for i in range(1, vmCount): {
+  scope: resourceGroup
+  name: '${varDeploymentTierLowerCase}-LoadBalancer-${i}-${time}'
+  params: {
+    name: varLoadBalancerName
+    location: location
+    frontendIPConfigurations: [
+      {
+        name: 'ipconfig01'
+        subnetId: subnetId
+      }
+    ]
+    //backendAddressPools: [
+    //  {
+    //      name: 'Backend-${varDeploymentTierLowerCase}'
+    //      properties: {
+    //          virtualNetwork: {
+    //              id: subnetId
+    //          }
+    //          ipAddress:
+    //      }
+    //  }
+    //]
+    tags: !empty(tags) ? tags : {}
+    lock: !empty(lock) ? lock : ''
+    diagnosticWorkspaceId: !empty(workspaceId) ? workspaceId : ''
+    diagnosticStorageAccountId: !empty(diagnosticStorageAccountId) ? diagnosticStorageAccountId : ''
+    diagnosticEventHubAuthorizationRuleId: !empty(eventHubAuthorizationRuleId) ? eventHubAuthorizationRuleId : ''
+    diagnosticEventHubName: !empty(eventHubName) ? eventHubName : ''
+
+  }
 }]
 
 // ========== //

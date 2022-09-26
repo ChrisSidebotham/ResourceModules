@@ -105,9 +105,9 @@ var varBastionSubnetName = 'AzureBastionSubnet'
 var varDeploymentPrefix = !empty(deploymentPrefix) ? deploymentPrefix : '3tier'
 var varResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : 'rg-${varDeploymentPrefixLowerCase}-${varLocationLowercase}-network'
 var varVnetName = !empty(vnetName) ? vnetName : 'vnet-${varDeploymentPrefixLowerCase}-${varLocationLowercase}-001'
-var varWebTierSubnetName = !empty(webTierSubnetName) ? webTierSubnetName : 'vnet-${varDeploymentPrefixLowerCase}-web-${varLocationLowercase}-001'
-var varAppTierSubnetName = !empty(appTierSubnetName) ? appTierSubnetName : 'vnet-${varDeploymentPrefixLowerCase}-app-${varLocationLowercase}-001'
-var varDbTierSubnetName = !empty(dbTierSubnetName) ? dbTierSubnetName : 'vnet-${varDeploymentPrefixLowerCase}-db-${varLocationLowercase}-001'
+var varWebTierSubnetName = !empty(webTierSubnetName) ? webTierSubnetName : 'snet-${varDeploymentPrefixLowerCase}-web-${varLocationLowercase}-001'
+var varAppTierSubnetName = !empty(appTierSubnetName) ? appTierSubnetName : 'snet-${varDeploymentPrefixLowerCase}-app-${varLocationLowercase}-001'
+var varDbTierSubnetName = !empty(dbTierSubnetName) ? dbTierSubnetName : 'snet-${varDeploymentPrefixLowerCase}-db-${varLocationLowercase}-001'
 var varNsgBastionSubnetName = !empty(nsgBastionSubnetName) ? nsgBastionSubnetName : 'nsg-${varDeploymentPrefixLowerCase}-bastion-${varLocationLowercase}-001'
 var varNsgWebTierSubnetName = !empty(nsgWebTierSubnetName) ? nsgWebTierSubnetName : 'nsg-${varDeploymentPrefixLowerCase}-web-${varLocationLowercase}-001'
 var varNsgAppTierSubnetName = !empty(nsgAppTierSubnetName) ? nsgAppTierSubnetName : 'nsg-${varDeploymentPrefixLowerCase}-app-${varLocationLowercase}-001'
@@ -342,7 +342,7 @@ module udrDbSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.
   }
 }
 
-module asgWebSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgWebSubnet '../../../../../modules/Microsoft.Network/applicationSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-Web-ASG-${time}'
   params: {
@@ -352,7 +352,7 @@ module asgWebSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy
   }
 }
 
-module asgAppSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgAppSubnet '../../../../../modules/Microsoft.Network/applicationSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-App-ASG-${time}'
   params: {
@@ -362,7 +362,7 @@ module asgAppSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy
   }
 }
 
-module asgDbSubnet '../../../../../modules/Microsoft.Network/routeTables/deploy.bicep' = {
+module asgDbSubnet '../../../../../modules/Microsoft.Network/applicationSecurityGroups/deploy.bicep' = {
   scope: resourceGroup
   name: 'Deploy-DB-ASG-${time}'
   params: {
@@ -428,7 +428,7 @@ output virtualNetworkId string = virtualNetwork.outputs.resourceId
 output bastionSubnetId string = virtualNetwork.outputs.subnetResourceIds[0]
 output webSubnetId string = virtualNetwork.outputs.subnetResourceIds[1]
 output appSubnetId string = virtualNetwork.outputs.subnetResourceIds[2]
-output dbSubnetId string = virtualNetwork.outputs.subnetResourceIds[2]
+output dbSubnetId string = virtualNetwork.outputs.subnetResourceIds[3]
 output asgWebId string = asgWebSubnet.outputs.resourceId
 output asgAppId string = asgWebSubnet.outputs.resourceId
 output asgDbId string = asgWebSubnet.outputs.resourceId
