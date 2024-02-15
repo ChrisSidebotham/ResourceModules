@@ -4,13 +4,11 @@ Modules can be stored in an accessible location like local, Template Specs, Bice
 
 The update process is the following:
 
-### _Navigation_
-
-- [1. Backup your local copy of the library](#1-backup-your-local-copy-of-the-library)
-- [2. Download the library](#2-download-the-library)
-- [3. (Optional) Convert library to ARM](#3-optional-convert-library-to-arm)
-- [4. (Optional) Customize modules](#4-optional-customize-modules)
-- [5. Test and publish modules](#5-test-and-publish-modules)
+1. [Backup your local copy of the library](#1-backup-your-local-copy-of-the-library)
+1. [Download the library](#2-download-the-library)
+1. [(Optional) Convert library to ARM](#3-optional-convert-library-to-arm)
+1. [(Optional) Customize modules](#4-optional-customize-modules)
+1. [Test and publish modules](#5-test-and-publish-modules)
 
 # 1. Backup your local copy of the library
 
@@ -36,3 +34,4 @@ If your copy deviates from the upstream version due to customizations you applie
 
 To test and publish updated modules, follow the best option for your scenario in [Test and publish modules](./Getting%20started%20-%20Scenario%201%20Consume%20library#3-test-and-publish-modules)
 
+> **Note:** It may be the case that names of modules changed. While this won't have an effect on any existing solution you may have based on the library, it will mean that for new module versions you will need to adopt the new module names.

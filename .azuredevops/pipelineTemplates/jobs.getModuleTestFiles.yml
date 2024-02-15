@@ -25,28 +25,20 @@ jobs:
           targetType: inline
           pwsh: true
           script: |
-            # Load used functions
-            . (Join-Path '$(System.DefaultWorkingDirectory)' 'utilities' 'pipelines' 'sharedScripts' 'Get-ModuleTestFileList.ps1')
+            # Get the list of parameter file paths
+            $moduleFolderPath = Join-Path '$(System.DefaultWorkingDirectory)' '${{ parameters.modulePath }}'
+            $testFilePaths = (Get-ChildItem -Path $moduleFolderPath -Recurse -Filter 'main.test.bicep').FullName | Sort-Object
 
-            $functionInput = @{
-              ModulePath = Join-Path '$(System.DefaultWorkingDirectory)' '${{ parameters.modulePath }}'
+            $deploymentTestPaths = $testFilePaths | ForEach-Object {
+              $_.Replace($moduleFolderPath, '').Trim('\').Trim('/')
             }
 
-            Write-Verbose "Invoke task with" -Verbose
-            Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
-
-            # Set agent up
-            $deploymentTestPaths = Get-ModuleTestFileList @functionInput -Verbose
+            Write-Verbose 'Found module test files' -Verbose
+            $deploymentTestPaths | ForEach-Object { Write-Verbose "- [$_]" -Verbose }
 
             $testTable = @{}
             foreach ($deploymentTestPath in $deploymentTestPaths) {
-                if((Split-Path (Split-Path $deploymentTestPath) -Leaf) -ne '.test') {
-                  # Using test files in subfolders (e.g. '.test/deploy.test.json')
-                  $deploymentTestFileName = Split-Path (Split-Path $deploymentTestPath -Parent) -Leaf
-                } else {
-                  # Using parameter files (e.g. '.test/parameters.json')
-                  $deploymentTestFileName = Split-Path $deploymentTestPath -Leaf
-                }
+                $deploymentTestFileName = Split-Path (Split-Path $deploymentTestPath -Parent) -Leaf
                 $testTable[$deploymentTestFileName] += @{
                     moduleTestFilePath = $deploymentTestPath
                 }
